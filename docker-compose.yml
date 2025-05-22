@@ -7,6 +7,8 @@
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_HTTP_PORTS=8080
+    ports:
+      - "8080:8080"
     volumes:
       - ./Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
     container_name: marketplace-api
@@ -37,22 +39,8 @@
     container_name: my-redis-container
     networks:
       - market
-
-  frontend:
-    image: marketplacefront
-    container_name: marketplace-frontend
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
     ports:
-      - "3000:3000"  
-    environment:
-      - DEV_SERVER=http://localhost:8080
-      - PROD_SERVER=/api
-    depends_on:
-      - marketplace-api
-    networks:
-      - market
+      - "6379:6379"
 
 networks:
   market:

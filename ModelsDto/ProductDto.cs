@@ -13,4 +13,5 @@ public class ProductDto
     public int Id { get; set; }
     public string imagePath { get; set; }
     public string Characteristic { get; set; }
+    public List<Image> Images { get; set; }
 }
