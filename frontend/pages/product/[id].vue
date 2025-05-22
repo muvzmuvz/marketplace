@@ -110,7 +110,7 @@ const addToCart = async () => {
       <!-- Миниатюры -->
       <Swiper :modules="[Thumbs]" :space-between="10" :slidesPerView="4" @swiper="(swiper) => (thumbsSwiper = swiper)"
         class="thumb-slider">
-        <SwiperSlide v-for="(image, index) in product.images" :key="index">
+        <SwiperSlide v-for="(image, index) in product.images" :key="index" class="swiper-img">
           <img :src="product.imagePath" :alt="'Миниатюра ' + (index + 1)" />
         </SwiperSlide>
       </Swiper>

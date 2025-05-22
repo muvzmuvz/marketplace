@@ -18,6 +18,14 @@
 	margin-bottom: 20px;
 }
 
+
+.swiper-img{
+ max-width: 100%;
+  max-height: 200px; /* можно подогнать под твой макет */
+  object-fit: cover; /* обрежет лишнее, сохранит пропорции */
+  border-radius: 8px;
+}
+
 .product-info {
 	display: flex;
 	flex-direction: column;

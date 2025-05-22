@@ -28,6 +28,12 @@
 	}
 	margin-bottom: 50px;
 }
+.card-img {
+  width: 100%;
+  height: 220px; /* можно подогнать под твой макет */
+  object-fit: fill; /* обрежет лишнее, сохранит пропорции */
+  border-radius: 8px;
+}
 
 .card-items {
 	display: grid;
