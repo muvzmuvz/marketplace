@@ -52,11 +52,7 @@ public class ProductViewHistoryRepository : IProductViewHistoryRepository
         var viewHistories = await _appDbContext.ProductViewHistories
         .Where(h => h.UserId == userId)
         .Include(h => h.Product) 
-        .ToListAsync();
-        if (viewHistories == null || !viewHistories.Any())
-        {
-            throw new NotFoundExeption("история покупок не нййдена у пользователя");
-        }
+        .ToListAsync(); 
 
         return viewHistories.Select(h => h.Product).ToList();
     }

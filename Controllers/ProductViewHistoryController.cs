@@ -88,7 +88,7 @@ public class ProductViewHistoryController : ControllerBase
 
             await _productViewHistoryService.DeleteHistoryAsync(userId, productId);
 
-            return NotFound();
+            return NoContent();
         }
         catch (NotFoundExeption ex)
         {
