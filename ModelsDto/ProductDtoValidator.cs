@@ -7,11 +7,11 @@ public class ProductDtoValidator : AbstractValidator<ProductDtoResponse>
     public ProductDtoValidator()
     {
         RuleFor(product => product.Name).NotEmpty()
-            .Length(3, 20);
+            .Length(3, 50);
         RuleFor(product => product.Description).NotEmpty()
-            .Length(20, 600);
+            .Length(10, 600);
         RuleFor(product => product.Price).NotEmpty()
-            .LessThanOrEqualTo(10000);
+            .LessThanOrEqualTo(1000000);
         RuleFor(product => product.Category).NotEmpty();
     }
 }
