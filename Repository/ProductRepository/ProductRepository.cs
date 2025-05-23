@@ -37,12 +37,14 @@ public class ProductRepository : IProductRepository
 
     public async Task<List<Product>> GetAllAsync()
     {
-        return await _context.Products.ToListAsync();
+        return await _context.Products.Include(image => image.Images).ToListAsync();
     }
 
     public async Task<Product> GetByIdAsync(int id)
     {
-       var product = await _context.Products.FindAsync(id);
+        var product = await _context.Products
+            .Include(p => p.Images)
+            .FirstOrDefaultAsync(p => p.Id == id);
         if (product == null)
         {
             throw new NotFoundExeption("Данного продукта нет");
@@ -55,7 +57,7 @@ public class ProductRepository : IProductRepository
 
     public async Task<ICollection<Product>> GetByName(string name)
     {
-        var products = await _context.Products.Where(p => p.Name == name).ToListAsync();
+        var products = await _context.Products.Include(image => image.Images).Where(p => p.Name == name).ToListAsync();
         if (!products.Any())
         {
             throw new NotFoundExeption("Продуктов с данным именем не существует");
@@ -68,7 +70,7 @@ public class ProductRepository : IProductRepository
     {
         int lengthPage = 10;
         int skip = (id - 1) * lengthPage;
-        var page = await _context.Products
+        var page = await _context.Products.Include(image => image.Images)
             .Skip(skip)
             .Take(lengthPage)
             .ToListAsync();
