@@ -55,7 +55,9 @@ onMounted(fetchOrders)
                         <p><strong>Товары в заказе:</strong></p>
                         <ul>
                             <li v-for="product in order.products" :key="product.productId">
+                                <router-link :to="`/product/${product.productId}`">
                                 <img :src="product.product.imagePath" alt="product.name" class="w-30 h-20 inline-block mr-2" />
+                            </router-link>
                                 {{ product.product.name }} - {{ product.quantity }} шт.
                             </li>
                         </ul>

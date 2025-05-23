@@ -57,7 +57,7 @@ const logout = async () => {
 }
 
 const viewAllOrders = () => {
-    router.push('/orders') // Перенаправляем на страницу с полным списком заказов
+    router.push('/delivery') // Перенаправляем на страницу с полным списком заказов
 }
 </script>
 
