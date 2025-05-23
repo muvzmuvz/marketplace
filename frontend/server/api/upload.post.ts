@@ -10,24 +10,38 @@ export const config = {
 }
 
 export default defineEventHandler(async (event) => {
-  const form = new IncomingForm({ uploadDir: 'public/uploads', keepExtensions: true })
+  const uploadDir = path.resolve('public/uploads')
 
-  // Убедимся, что папка существует
-  const uploadPath = path.resolve('public/uploads')
-  if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true })
+  // Убедимся, что папка для загрузки существует
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true })
+  }
+
+  const form = new IncomingForm({
+    uploadDir,
+    keepExtensions: true,
+    multiples: false,
+  })
 
   return await new Promise((resolve, reject) => {
     form.parse(event.node.req, (err, fields, files) => {
       if (err) {
-        reject({ error: 'Ошибка загрузки файла' })
+        console.error('Ошибка при загрузке файла:', err)
+        reject({ error: 'Не удалось загрузить файл' })
         return
       }
 
-      const file = files.file?.[0] || files.file
-      const filename = path.basename(file.filepath)
-      const imagePath = `/uploads/${filename}`
+      const uploadedFile = files.file?.[0] || files.file
 
-      resolve({ imagePath })
+      if (!uploadedFile || !uploadedFile.filepath) {
+        reject({ error: 'Файл не найден' })
+        return
+      }
+
+      const fileName = path.basename(uploadedFile.filepath)
+      const publicPath = `/uploads/${fileName}`
+
+      resolve({ imagePath: publicPath })
     })
   })
 })

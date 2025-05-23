@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
 import { RefreshCwIcon, Loader2Icon, EyeIcon, Trash2Icon } from 'lucide-vue-next'
 
@@ -144,14 +145,55 @@ async function loadOrders() {
   }
 }
 
+async function uploadImages(event: Event) {
+  const input = event.target as HTMLInputElement
+  const files = Array.from(input.files || [])
+
+  if (!files.length) return
+
+  try {
+    const uploadPromises = files.map(async (file) => {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) throw new Error('Ошибка загрузки изображения')
+
+      const data = await response.json()
+      return { path: data.imagePath }  // приводим к ProductImage
+    })
+
+    const newImages = await Promise.all(uploadPromises)
+    form.images.push(...newImages)
+  } catch (error) {
+    console.error('Ошибка загрузки изображений:', error)
+    alert('❌ Не удалось загрузить некоторые изображения')
+  }
+}
+
 async function submitProduct() {
   if (!validateForm()) return
 
   try {
+    const requestBody = {
+      countProduct: form.countProduct,
+      category: form.category,
+      price: form.price,
+      name: form.name,
+      description: form.description,
+      characteristic: form.characteristic,
+      imagePath : '',
+      images: form.images.map(img => ({ path: img.path }))  // только массив images
+    }
+
     const response = await fetch('http://localhost:8080/product/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      body: JSON.stringify(requestBody),
       credentials: 'include'
     })
 
@@ -165,6 +207,7 @@ async function submitProduct() {
     alert('❌ Ошибка при создании товара')
   }
 }
+
 
 function validateForm() {
   if (!form.name.trim()) {
@@ -192,35 +235,7 @@ function resetForm() {
   form.images = []
 }
 
-async function uploadImages(event: Event) {
-  const input = event.target as HTMLInputElement
-  const files = Array.from(input.files || [])
-  
-  if (!files.length) return
 
-  try {
-    const uploadPromises = files.map(async (file) => {
-      const formData = new FormData()
-      formData.append('file', file)
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      })
-
-      if (!response.ok) throw new Error('Ошибка загрузки изображения')
-      
-      const { imagePath } = await response.json()
-      return { path: imagePath }
-    })
-
-    const newImages = await Promise.all(uploadPromises)
-    form.images.push(...newImages)
-  } catch (error) {
-    console.error('Ошибка загрузки изображений:', error)
-    alert('❌ Не удалось загрузить некоторые изображения')
-  }
-}
 
 function removeImage(index: number) {
   form.images.splice(index, 1)

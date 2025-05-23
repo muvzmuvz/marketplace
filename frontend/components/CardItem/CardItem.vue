@@ -8,7 +8,7 @@ import '@/assets/css/main.css';
 
 <template>
   <div class="card-items">
-    <img :src="product.imagePath" :alt="product.name" class="card-img" />
+    <img :src="product.images[0].path" :alt="product.name" class="card-img" />
     <p class="card-coast">{{ product.price.toLocaleString() }} ₽</p>
     <p class="card--descripion">{{ product.name }}</p>
     <p class="card--ps">Осталось: {{ product.countProduct }} штук</p>

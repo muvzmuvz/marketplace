@@ -90,8 +90,8 @@ const viewAllOrders = () => {
 
 
         <!-- Заказы -->
-        <div class="orders mt-6">
-            <h2 class="text-xl font-semibold">Мои последние заказы</h2>
+        <div class="orders mt-6 ">
+            <h2 class="text-xl font-semibold ">Мои последние заказы</h2>
 
             <div v-if="!user?.orders || user.orders.length === 0" class="text-gray-500">У вас пока нет заказов</div>
 
@@ -116,13 +116,14 @@ const viewAllOrders = () => {
                     </div>
                 </Card>
             </div>
+            <ProductViewHistory/>
 
             <!-- Кнопка для просмотра всех заказов -->
             <div v-if="user?.orders.length > 2" class="text-center mt-4">
                 <Button @click="viewAllOrders" variant="outline">Посмотреть все заказы</Button>
             </div>
         </div>
-        <ProductViewHistory/>
+        
         
     </div>
 </template>

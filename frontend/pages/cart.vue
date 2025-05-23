@@ -49,7 +49,7 @@ const fetchCartItems = async () => {
         name: item.product.name,
         price: item.product.price,
         description: item.product.description,
-        imagePath: item.product.imagePath,
+        imagePath: item.product.images[0].path,
         quantity: item.quantity ?? 1, // Если quantity не передан, ставим 1
       }));
 
