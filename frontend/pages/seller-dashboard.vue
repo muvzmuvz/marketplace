@@ -1,7 +1,352 @@
+<script setup lang="ts">
+import { ref, reactive, computed, onMounted } from 'vue'
+
+import { RefreshCwIcon, Loader2Icon, EyeIcon, Trash2Icon } from 'lucide-vue-next'
+
+interface ProductImage {
+  path: string
+}
+
+interface Product {
+  id: number
+  name: string
+  description: string
+  price: number
+  characteristic: string
+  countProduct: number
+  category: number
+  images: ProductImage[]
+}
+
+interface OrderProduct {
+  productId: number
+  product: Product
+  quantity: number
+  price: number
+}
+
+interface Order {
+  id: number
+  userId: number
+  totalPrice: number
+  status: number
+  dateCreated: string
+  products: OrderProduct[]
+}
+
+const form = reactive({
+  name: '',
+  description: '',
+  characteristic: '',
+  price: 0,
+  countProduct: 1,
+  category: 1,
+  images: [] as ProductImage[]
+})
+
+const router = useRouter()
+const user = ref<User | null>(null)
+const isLoading = ref(true)
+
+const isSeller = computed(() => user.value?.role === 2)
+
+const fetchProfile = async () => {
+  try {
+    const response = await fetch('http://localhost:8080/user/user', {
+      method: 'GET',
+      credentials: 'include'
+    })
+
+    if (!response.ok) throw new Error('Ошибка авторизации')
+    
+    const userData = await response.json()
+    user.value = userData
+
+    // Проверка роли
+    if (userData.role !== 2) {
+      router.push('/')
+      return
+    }
+
+  } catch (error) {
+    console.error('Ошибка:', error)
+    router.push('/auth/login')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchProfile()
+})
+
+const products = ref<Product[]>([])
+const loading = ref(false)
+const orders = ref<Order[]>([])
+const ordersLoading = ref(false)
+const ordersError = ref('')
+const searchQuery = ref('')
+const statusFilter = ref('all')
+const selectedOrder = ref<Order | null>(null)
+const isOrderDetailsOpen = ref(false)
+const editingProduct = ref<Product | null>(null)
+
+const editForm = reactive({
+  name: '',
+  description: '',
+  price: 0
+})
+
+const isEditModalOpen = computed({
+  get: () => !!editingProduct.value,
+  set: (value) => {
+    if (!value) editingProduct.value = null
+  }
+})
+
+onMounted(() => {
+  loadProducts()
+  loadOrders()
+})
+
+
+
+
+
+
+
+async function loadProducts() {
+  loading.value = true
+  try {
+    const response = await fetch('http://localhost:8080/product/top_product', {
+      credentials: 'include'
+    })
+    products.value = await response.json()
+  } catch (error) {
+    console.error('Ошибка загрузки товаров:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+async function loadOrders() {
+  ordersLoading.value = true
+  try {
+    const response = await fetch('http://localhost:8080/order/orders', {
+      credentials: 'include'
+    })
+    orders.value = await response.json()
+  } catch (error) {
+    ordersError.value = 'Ошибка загрузки заказов'
+    console.error(error)
+  } finally {
+    ordersLoading.value = false
+  }
+}
+
+async function submitProduct() {
+  if (!validateForm()) return
+
+  try {
+    const response = await fetch('http://localhost:8080/product/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+      credentials: 'include'
+    })
+
+    if (!response.ok) throw new Error('Ошибка при создании товара')
+
+    resetForm()
+    await loadProducts()
+    alert('✅ Товар успешно создан!')
+  } catch (error) {
+    console.error(error)
+    alert('❌ Ошибка при создании товара')
+  }
+}
+
+function validateForm() {
+  if (!form.name.trim()) {
+    alert('Введите название товара')
+    return false
+  }
+  if (form.price <= 0) {
+    alert('Цена должна быть больше нуля')
+    return false
+  }
+  if (form.images.length === 0) {
+    alert('Добавьте хотя бы одно изображение')
+    return false
+  }
+  return true
+}
+
+function resetForm() {
+  form.name = ''
+  form.description = ''
+  form.characteristic = ''
+  form.price = 0
+  form.countProduct = 1
+  form.category = 1
+  form.images = []
+}
+
+async function uploadImages(event: Event) {
+  const input = event.target as HTMLInputElement
+  const files = Array.from(input.files || [])
+  
+  if (!files.length) return
+
+  try {
+    const uploadPromises = files.map(async (file) => {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) throw new Error('Ошибка загрузки изображения')
+      
+      const { imagePath } = await response.json()
+      return { path: imagePath }
+    })
+
+    const newImages = await Promise.all(uploadPromises)
+    form.images.push(...newImages)
+  } catch (error) {
+    console.error('Ошибка загрузки изображений:', error)
+    alert('❌ Не удалось загрузить некоторые изображения')
+  }
+}
+
+function removeImage(index: number) {
+  form.images.splice(index, 1)
+}
+
+
+
+async function deleteProduct(id: number) {
+  if (confirm('Удалить товар?')) {
+    await fetch(`http://localhost:8080/product/delete/${id}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    })
+    await loadProducts()
+  }
+}
+
+function startEdit(product: Product) {
+  editingProduct.value = product
+  editForm.name = product.name
+  editForm.description = product.description
+  editForm.price = product.price
+}
+
+async function updateProduct() {
+  if (!editingProduct.value) return
+
+  try {
+    const response = await fetch(`http://localhost:8080/product/update/${editingProduct.value.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editForm),
+      credentials: 'include'
+    })
+
+    if (!response.ok) throw new Error('Ошибка обновления')
+
+    await loadProducts()
+    editingProduct.value = null
+  } catch (error) {
+    console.error(error)
+    alert('❌ Ошибка при обновлении товара')
+  }
+}
+
+const filteredOrders = computed(() => {
+  return orders.value.filter(order => {
+    const matchesSearch = order.id.toString().includes(searchQuery.value)
+    const matchesStatus = statusFilter.value === 'all' || order.status.toString() === statusFilter.value
+    return matchesSearch && matchesStatus
+  })
+})
+
+async function updateOrderStatus(orderId: number, status: string) {
+  try {
+    const response = await fetch(`http://localhost:8080/order/order_update/${orderId}?status=${status}`, {
+      method: 'PUT',
+      credentials: 'include'
+    })
+
+    if (!response.ok) throw new Error('Ошибка обновления статуса')
+
+    await loadOrders()
+  } catch (error) {
+    console.error(error)
+    alert('❌ Ошибка обновления статуса')
+  }
+}
+
+function openOrderDetails(order: Order) {
+  selectedOrder.value = order
+  isOrderDetailsOpen.value = true
+}
+
+async function confirmDeleteOrder(id: number) {
+  if (confirm('Удалить заказ?')) {
+    try {
+      await fetch(`http://localhost:8080/order/orders/${id}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+      await loadOrders()
+    } catch (error) {
+      console.error(error)
+      alert('❌ Ошибка удаления заказа')
+    }
+  }
+}
+
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat('ru-RU', {
+    style: 'currency',
+    currency: 'RUB'
+  }).format(amount)
+}
+
+function formatDate(dateString: string) {
+  return new Date(dateString).toLocaleDateString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+function getStatusText(status: number) {
+  return {
+    0: 'Ожидает обработки',
+    1: 'В обработке',
+  }[status] || 'Неизвестный статус'
+}
+
+function getStatusBadgeVariant(status: number) {
+  return {
+    0: 'secondary',
+    1: 'default',
+  }[status] || 'default'
+}
+</script>
+
+
 <template>
     <NavMenu />
 
-    <main class="p-4 md:p-8 dash" v-if="user">
+    <main class="p-4 md:p-8 dash" v-if="isSeller">
       <Tabs default-value="crm" class="w-full">
         <TabsList class="grid w-full grid-cols-3">
           <TabsTrigger value="crm">CRM</TabsTrigger>
@@ -304,347 +649,7 @@
   
 </template>
 
-<script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
 
-import { RefreshCwIcon, Loader2Icon, EyeIcon, Trash2Icon } from 'lucide-vue-next'
-
-interface ProductImage {
-  path: string
-}
-
-interface Product {
-  id: number
-  name: string
-  description: string
-  price: number
-  characteristic: string
-  countProduct: number
-  category: number
-  images: ProductImage[]
-}
-
-interface OrderProduct {
-  productId: number
-  product: Product
-  quantity: number
-  price: number
-}
-
-interface Order {
-  id: number
-  userId: number
-  totalPrice: number
-  status: number
-  dateCreated: string
-  products: OrderProduct[]
-}
-
-const form = reactive({
-  name: '',
-  description: '',
-  characteristic: '',
-  price: 0,
-  countProduct: 1,
-  category: 1,
-  images: [] as ProductImage[]
-})
-
-const router = useRouter()
-const user = ref(null)
-
-const products = ref<Product[]>([])
-const loading = ref(false)
-const orders = ref<Order[]>([])
-const ordersLoading = ref(false)
-const ordersError = ref('')
-const searchQuery = ref('')
-const statusFilter = ref('all')
-const selectedOrder = ref<Order | null>(null)
-const isOrderDetailsOpen = ref(false)
-const editingProduct = ref<Product | null>(null)
-
-const editForm = reactive({
-  name: '',
-  description: '',
-  price: 0
-})
-
-const isEditModalOpen = computed({
-  get: () => !!editingProduct.value,
-  set: (value) => {
-    if (!value) editingProduct.value = null
-  }
-})
-
-onMounted(() => {
-  loadProducts()
-  loadOrders()
-})
-
-const fetchProfile = async () => {
-    try {
-        const response = await fetch('http://localhost:8080/user/user', {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include'
-        })
-
-        if (!response.ok) throw new Error('Не авторизован')
-
-        user.value = await response.json()
-
-        const ordersResponse = await fetch('http://localhost:8080/order/orders', {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include'
-        })
-
-        if (ordersResponse.ok) {
-            user.value.orders = await ordersResponse.json()
-        } else {
-            throw new Error('Ошибка при загрузке заказов')
-        }
-
-    } catch (error) {
-        router.push('/auth/login')
-    } finally {
-        isLoading.value = false
-    }
-}
-
-onMounted(() => {
-    fetchProfile()
-})
-
-
-
-async function loadProducts() {
-  loading.value = true
-  try {
-    const response = await fetch('http://localhost:8080/product/top_product', {
-      credentials: 'include'
-    })
-    products.value = await response.json()
-  } catch (error) {
-    console.error('Ошибка загрузки товаров:', error)
-  } finally {
-    loading.value = false
-  }
-}
-
-async function loadOrders() {
-  ordersLoading.value = true
-  try {
-    const response = await fetch('http://localhost:8080/order/orders', {
-      credentials: 'include'
-    })
-    orders.value = await response.json()
-  } catch (error) {
-    ordersError.value = 'Ошибка загрузки заказов'
-    console.error(error)
-  } finally {
-    ordersLoading.value = false
-  }
-}
-
-async function submitProduct() {
-  if (!validateForm()) return
-
-  try {
-    const response = await fetch('http://localhost:8080/product/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-      credentials: 'include'
-    })
-
-    if (!response.ok) throw new Error('Ошибка при создании товара')
-
-    resetForm()
-    await loadProducts()
-    alert('✅ Товар успешно создан!')
-  } catch (error) {
-    console.error(error)
-    alert('❌ Ошибка при создании товара')
-  }
-}
-
-function validateForm() {
-  if (!form.name.trim()) {
-    alert('Введите название товара')
-    return false
-  }
-  if (form.price <= 0) {
-    alert('Цена должна быть больше нуля')
-    return false
-  }
-  if (form.images.length === 0) {
-    alert('Добавьте хотя бы одно изображение')
-    return false
-  }
-  return true
-}
-
-function resetForm() {
-  form.name = ''
-  form.description = ''
-  form.characteristic = ''
-  form.price = 0
-  form.countProduct = 1
-  form.category = 1
-  form.images = []
-}
-
-async function uploadImages(event: Event) {
-  const input = event.target as HTMLInputElement
-  const files = Array.from(input.files || [])
-  
-  if (!files.length) return
-
-  try {
-    const uploadPromises = files.map(async (file) => {
-      const formData = new FormData()
-      formData.append('file', file)
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      })
-
-      if (!response.ok) throw new Error('Ошибка загрузки изображения')
-      
-      const { imagePath } = await response.json()
-      return { path: imagePath }
-    })
-
-    const newImages = await Promise.all(uploadPromises)
-    form.images.push(...newImages)
-  } catch (error) {
-    console.error('Ошибка загрузки изображений:', error)
-    alert('❌ Не удалось загрузить некоторые изображения')
-  }
-}
-
-function removeImage(index: number) {
-  form.images.splice(index, 1)
-}
-
-
-
-async function deleteProduct(id: number) {
-  if (confirm('Удалить товар?')) {
-    await fetch(`http://localhost:8080/product/delete/${id}`, {
-      method: 'DELETE',
-      credentials: 'include'
-    })
-    await loadProducts()
-  }
-}
-
-function startEdit(product: Product) {
-  editingProduct.value = product
-  editForm.name = product.name
-  editForm.description = product.description
-  editForm.price = product.price
-}
-
-async function updateProduct() {
-  if (!editingProduct.value) return
-
-  try {
-    const response = await fetch(`http://localhost:8080/product/update/${editingProduct.value.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editForm),
-      credentials: 'include'
-    })
-
-    if (!response.ok) throw new Error('Ошибка обновления')
-
-    await loadProducts()
-    editingProduct.value = null
-  } catch (error) {
-    console.error(error)
-    alert('❌ Ошибка при обновлении товара')
-  }
-}
-
-const filteredOrders = computed(() => {
-  return orders.value.filter(order => {
-    const matchesSearch = order.id.toString().includes(searchQuery.value)
-    const matchesStatus = statusFilter.value === 'all' || order.status.toString() === statusFilter.value
-    return matchesSearch && matchesStatus
-  })
-})
-
-async function updateOrderStatus(orderId: number, status: string) {
-  try {
-    const response = await fetch(`http://localhost:8080/order/order_update/${orderId}?status=${status}`, {
-      method: 'PUT',
-      credentials: 'include'
-    })
-
-    if (!response.ok) throw new Error('Ошибка обновления статуса')
-
-    await loadOrders()
-  } catch (error) {
-    console.error(error)
-    alert('❌ Ошибка обновления статуса')
-  }
-}
-
-function openOrderDetails(order: Order) {
-  selectedOrder.value = order
-  isOrderDetailsOpen.value = true
-}
-
-async function confirmDeleteOrder(id: number) {
-  if (confirm('Удалить заказ?')) {
-    try {
-      await fetch(`http://localhost:8080/order/orders/${id}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      })
-      await loadOrders()
-    } catch (error) {
-      console.error(error)
-      alert('❌ Ошибка удаления заказа')
-    }
-  }
-}
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('ru-RU', {
-    style: 'currency',
-    currency: 'RUB'
-  }).format(amount)
-}
-
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString('ru-RU', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
-
-function getStatusText(status: number) {
-  return {
-    0: 'Ожидает обработки',
-    1: 'В обработке',
-  }[status] || 'Неизвестный статус'
-}
-
-function getStatusBadgeVariant(status: number) {
-  return {
-    0: 'secondary',
-    1: 'default',
-  }[status] || 'default'
-}
-</script>
 
 <style scoped>
 .dash {

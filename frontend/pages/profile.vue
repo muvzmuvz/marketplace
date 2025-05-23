@@ -29,7 +29,8 @@ const fetchProfile = async () => {
         if (ordersResponse.ok) {
             user.value.orders = await ordersResponse.json()
         } else {
-            throw new Error('Ошибка при загрузке заказов')
+            throw new error('Ошибка при загрузке заказов')
+            
         }
 
     } catch (error) {
