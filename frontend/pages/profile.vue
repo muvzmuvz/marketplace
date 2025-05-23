@@ -87,12 +87,6 @@ const viewAllOrders = () => {
             </CardContent>
         </Card>
 
-        <Card v-else>
-            <CardContent class="p-6 text-center">
-                <p class="text-red-500">Вы не вошли в систему</p>
-                <Button @click="router.push('/auth/login')" class="mt-4">Войти</Button>
-            </CardContent>
-        </Card>
 
         <!-- Заказы -->
         <div class="orders mt-6">
