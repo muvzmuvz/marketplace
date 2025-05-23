@@ -10,6 +10,58 @@ import 'swiper/css/zoom';
 import { Navigation, Thumbs, Zoom } from 'swiper/modules';
 import '@/assets/css/productPage.css'
 
+const comments = ref([]);
+const newComment = ref('');
+
+// Получение комментариев
+const fetchComments = async () => {
+  try {
+    const res = await fetch(`http://localhost:8080/review/reviews_product/${productId}`);
+    if (!res.ok) throw new Error('Ошибка загрузки комментариев');
+    comments.value = await res.json();
+  } catch (e) {
+    console.error('Ошибка получения комментариев:', e);
+  }
+};
+
+// Отправка нового комментария
+const postComment = async () => {
+  if (!newComment.value.trim()) {
+    alert('Комментарий не может быть пустым');
+    return;
+  }
+
+  try {
+    const res = await fetch(`http://localhost:8080/review/create_review`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        productId: parseInt(productId),
+        userId: 0, // Заменить на реальный userId, если он есть
+        rating: 0, // Пока без рейтинга
+        productEvaluation: 0,
+        dateCreated: new Date().toISOString(),
+        description: newComment.value,
+      }),
+    });
+
+    if (!res.ok) throw new Error('Ошибка добавления комментария');
+
+    newComment.value = '';
+    await fetchComments();
+  } catch (e) {
+    console.error('Ошибка при отправке комментария:', e);
+  }
+};
+
+onMounted(async () => {
+  await fetchProduct();
+  await fetchComments();
+});
+
 // Получаем id товара из URL
 const route = useRoute();
 const productId = route.params.id;
@@ -139,7 +191,7 @@ const addToCart = async () => {
       <Button @click="goBack">Вернуться назад</Button>
     </nuxt-link>
   </div>
-
+  
 </template>
 
 <style scoped></style>

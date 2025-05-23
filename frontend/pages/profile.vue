@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import '@/assets/css/profile.css'
+import ProductViewHistory from '@/components/ProductViewHistory/ProductViewHistory.vue'
 
 const router = useRouter()
 const user = ref(null)
@@ -126,5 +127,7 @@ const viewAllOrders = () => {
                 <Button @click="viewAllOrders" variant="outline">Посмотреть все заказы</Button>
             </div>
         </div>
+        <ProductViewHistory/>
+        
     </div>
 </template>

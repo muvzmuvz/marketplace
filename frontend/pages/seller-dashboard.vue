@@ -1,158 +1,350 @@
 <template>
-      <NavMenu />
-  <div class="p-4 dash">
-    <Tabs default-value="crm" class="w-full">
-      <TabsList>
-        <TabsTrigger value="crm">CRM</TabsTrigger>
-        <TabsTrigger value="create">Создать товар</TabsTrigger>
-        <TabsTrigger value="manage">Управление товарами</TabsTrigger>
-      </TabsList>
+  <div class="min-h-screen bg-gray-50">
+    <NavMenu />
+    
+    <main class="p-4 md:p-8 dash">
+      <Tabs default-value="crm" class="w-full">
+        <TabsList class="grid w-full grid-cols-3">
+          <TabsTrigger value="crm">CRM</TabsTrigger>
+          <TabsTrigger value="create">Создать товар</TabsTrigger>
+          <TabsTrigger value="manage">Управление товарами</TabsTrigger>
+        </TabsList>
 
-      <!-- Вкладка CRM -->
-      <TabsContent value="crm">
-        <Card>
-          <CardContent class="p-6">
-            <h2 class="text-xl font-semibold mb-4">Добро пожаловать в CRM</h2>
-            <p class="text-muted-foreground">
-              Здесь вы будете видеть заказы, статистику и управление товарами.
-            </p>
-          </CardContent>
-        </Card>
-      </TabsContent>
+        <!-- Вкладка CRM -->
+        <TabsContent value="crm">
+          <Card>
+            <CardContent class="p-6 space-y-6">
+              <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-semibold">Управление заказами</h2>
+                <Button @click="loadOrders" variant="outline">
+                  <RefreshCwIcon class="w-4 h-4 mr-2" :class="{ 'animate-spin': ordersLoading }" />
+                  Обновить
+                </Button>
+              </div>
 
-      <!-- Вкладка создания товара -->
-      <TabsContent value="create">
-        <Card>
-          <CardContent class="p-6">
-            <h2 class="text-xl font-semibold mb-4">Добавить новый товар</h2>
-            <form @submit.prevent="submitProduct">
-              <div class="grid gap-4">
-                <div>
-                  <label class="block text-sm font-medium">Название</label>
-                  <Input v-model="form.Name" placeholder="Smartphone X200" />
+              <div v-if="ordersLoading" class="flex justify-center py-8">
+                <Loader2Icon class="w-8 h-8 animate-spin" />
+              </div>
+
+              <div v-else-if="ordersError" class="text-red-500 text-center py-4">
+                {{ ordersError }}
+              </div>
+
+              <div v-else class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Input v-model="searchQuery" placeholder="Поиск по ID заказа" />
+                  <Select v-model="statusFilter">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Все статусы" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Все статусы</SelectItem>
+                      <SelectItem value="0">Ожидает обработки</SelectItem>
+                      <SelectItem value="1">В обработке</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                <div>
-                  <label class="block text-sm font-medium">Описание</label>
-                  <Textarea v-model="form.Description" placeholder="Описание товара" />
+                <div class="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Пользователь</TableHead>
+                        <TableHead>Товары</TableHead>
+                        <TableHead>Сумма</TableHead>
+                        <TableHead>Статус</TableHead>
+                        <TableHead class="text-right">Действия</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow v-for="order in filteredOrders" :key="order.id">
+                        <TableCell>#{{ order.id }}</TableCell>
+                        <TableCell>{{ order.userId }}</TableCell>
+                        <TableCell>
+                          <div v-for="item in order.products" :key="item.productId" class="text-sm">
+                            {{ item.product.name }} ×{{ item.quantity }}
+                          </div>
+                        </TableCell>
+                        <TableCell>{{ formatCurrency(order.totalPrice) }}</TableCell>
+                        <TableCell>
+                          <Select 
+                            :model-value="order.status.toString()"
+                            @update:model-value="updateOrderStatus(order.id, $event)"
+                          >
+                            <SelectTrigger class="w-[160px]">
+                              <SelectValue :placeholder="getStatusText(order.status)" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="0">Ожидает обработки</SelectItem>
+                              <SelectItem value="1">В обработке</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell class="text-right space-x-2">
+                          <Button variant="ghost" size="sm" @click="openOrderDetails(order)">
+                            <EyeIcon class="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm" class="text-red-500" @click="confirmDeleteOrder(order.id)">
+                            <Trash2Icon class="w-4 h-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-                <div>
-                  <label class="block text-sm font-medium">Характеристики</label>
-                  <Textarea v-model="form.Characteristic" placeholder="RAM: 12GB, Storage: 256GB..." />
-                </div>
-
-                <div>
-                  <label class="block text-sm font-medium">Цена (₽)</label>
-                  <Input type="number" v-model.number="form.Price" />
-                </div>
-
-                <div>
-                  <label class="block text-sm font-medium">Количество</label>
-                  <Input type="number" v-model.number="form.CountProduct" />
-                </div>
-
-                <div>
-                  <label class="block text-sm font-medium">Категория (ID)</label>
-                  <Input type="number" v-model.number="form.Category" />
-                </div>
-
-                <!-- Загрузка изображения -->
-                <div>
-                  <label class="block text-sm font-medium mb-1">Загрузить изображение</label>
-                  <input type="file" accept="image/*" @change="uploadImage" />
-                  <div v-if="form.imagePath" class="mt-2">
-                    <img
-                      :src="form.imagePath"
-                      alt="Превью"
-                      class="w-32 h-32 object-cover rounded border"
-                    />
+        <!-- Вкладка создания товара -->
+        <TabsContent value="create">
+          <Card>
+            <CardContent class="p-6">
+              <h2 class="text-2xl font-semibold mb-6">Создать новый товар</h2>
+              <form @submit.prevent="submitProduct" class="space-y-6">
+                <div class="grid gap-4 md:grid-cols-2">
+                  <div class="space-y-2">
+                    <Label>Название товара</Label>
+                    <Input v-model="form.Name" placeholder="Название" required />
+                  </div>
+                  
+                  <div class="space-y-2">
+                    <Label>Цена (₽)</Label>
+                    <Input type="number" v-model.number="form.Price" required />
+                  </div>
+                  
+                  <div class="space-y-2">
+                    <Label>Описание</Label>
+                    <Textarea v-model="form.Description" placeholder="Описание товара" />
+                  </div>
+                  
+                  <div class="space-y-2">
+                    <Label>Характеристики</Label>
+                    <Textarea v-model="form.Characteristic" placeholder="Характеристики" />
+                  </div>
+                  
+                  <div class="space-y-2">
+                    <Label>Категория (ID)</Label>
+                    <Input type="number" v-model.number="form.Category" required />
+                  </div>
+                  
+                  <div class="space-y-2">
+                    <Label>Количество</Label>
+                    <Input type="number" v-model.number="form.CountProduct" required />
                   </div>
                 </div>
 
-                <div class="text-right mt-4">
-                  <Button type="submit">Создать товар</Button>
+                <div class="space-y-4">
+                  <Label>Изображение товара</Label>
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    @change="uploadImage" 
+                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90"
+                  />
+                  <img 
+                    v-if="form.imagePath" 
+                    :src="form.imagePath" 
+                    class="w-32 h-32 object-cover rounded-lg border"
+                  />
                 </div>
+
+                <Button type="submit" class="w-full md:w-auto">Создать товар</Button>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <!-- Вкладка управления товарами -->
+        <TabsContent value="manage">
+          <Card>
+            <CardContent class="p-6">
+              <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold">Список товаров</h2>
+                <Button @click="loadProducts" variant="outline">
+                  <RefreshCwIcon class="w-4 h-4 mr-2" :class="{ 'animate-spin': loading }" />
+                  Обновить
+                </Button>
               </div>
-            </form>
-          </CardContent>
-        </Card>
-      </TabsContent>
 
-      <!-- Вкладка управления товарами -->
-      <TabsContent value="manage">
-        <Card>
-          <CardContent class="p-6">
-            <h2 class="text-xl font-semibold mb-4">Список товаров</h2>
-            <div v-if="loading">Загрузка...</div>
-            <div v-else>
-              <div v-if="products.length === 0">Нет товаров</div>
-              <div v-else class="grid gap-4">
-                <div v-for="product in products" :key="product.id" class="border p-4 rounded">
-                  <h3 class="font-semibold">{{ product.name }}</h3>
-                  <p class="text-sm text-muted-foreground">{{ product.description }}</p>
-                  <div class="text-sm">Цена: {{ product.price }} ₽</div>
-
-                  <div class="mt-2 flex gap-2">
-                    <Button @click="startEdit(product)">Редактировать</Button>
-                    <Button variant="destructive" @click="deleteProduct(product.id)">Удалить</Button>
-                  </div>
-                </div>
+              <div v-if="loading" class="flex justify-center py-8">
+                <Loader2Icon class="w-8 h-8 animate-spin" />
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </TabsContent>
-    </Tabs>
 
-    <!-- Модальное окно редактирования -->
-    <div v-if="editingProduct" class="modal-overlay" @click.self="cancelEdit">
-      <div class="modal">
-        <h2 class="text-xl font-semibold mb-4">Редактирование товара</h2>
-        <form @submit.prevent="updateProduct">
-          <div class="grid gap-4">
-            <div>
-              <label class="block text-sm font-medium">Название</label>
+              <div v-else-if="products.length === 0" class="text-center py-4 text-gray-500">
+                Нет доступных товаров
+              </div>
+
+              <div v-else class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <Card v-for="product in products" :key="product.id">
+                  <CardContent class="p-4 space-y-4">
+                    <div class="flex items-start gap-4">
+                      <img 
+                        :src="product.imagePath" 
+                        :alt="product.name" 
+                        class="w-24 h-24 rounded-lg object-cover"
+                      />
+                      <div class="flex-1">
+                        <h3 class="font-semibold">{{ product.name }}</h3>
+                        <p class="text-sm text-gray-500">{{ product.description }}</p>
+                        <div class="mt-2 text-lg font-semibold">
+                          {{ formatCurrency(product.price) }}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div class="flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        class="flex-1" 
+                        @click="startEdit(product)"
+                      >
+                        Редактировать
+                      </Button>
+                      <Button 
+                        variant="destructive" 
+                        class="flex-1" 
+                        @click="deleteProduct(product.id)"
+                      >
+                        Удалить
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      <!-- Модальное окно редактирования товара -->
+      <Dialog v-model:open="editingProduct">
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Редактирование товара</DialogTitle>
+          </DialogHeader>
+          
+          <div class="space-y-4">
+            <div class="space-y-2">
+              <Label>Название</Label>
               <Input v-model="editForm.name" />
             </div>
-            <div>
-              <label class="block text-sm font-medium">Описание</label>
+            
+            <div class="space-y-2">
+              <Label>Описание</Label>
               <Textarea v-model="editForm.description" />
             </div>
-            <div>
-              <label class="block text-sm font-medium">Цена</label>
+            
+            <div class="space-y-2">
+              <Label>Цена</Label>
               <Input type="number" v-model.number="editForm.price" />
             </div>
-            <div class="text-right mt-4 flex gap-2">
-              <Button type="submit">Сохранить изменения</Button>
-              <Button type="button" variant="secondary" @click="cancelEdit">Отмена</Button>
+            
+            <div class="flex justify-end gap-2">
+              <Button variant="outline" @click="cancelEdit">Отмена</Button>
+              <Button @click="updateProduct">Сохранить</Button>
             </div>
           </div>
-        </form>
-      </div>
-    </div>
+        </DialogContent>
+      </Dialog>
+
+      <!-- Модальное окно деталей заказа -->
+      <Dialog v-model:open="isOrderDetailsOpen">
+        <DialogContent class="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Заказ #{{ selectedOrder?.id }}</DialogTitle>
+            <DialogDescription>
+              Дата создания: {{ selectedOrder ? formatDate(selectedOrder.dateCreated) : '' }}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div class="grid gap-4 py-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div class="space-y-2">
+                <Label>Статус заказа</Label>
+                <Badge :variant="getStatusBadgeVariant(selectedOrder?.status || 0)" class="text-sm">
+                  {{ getStatusText(selectedOrder?.status || 0) }}
+                </Badge>
+              </div>
+              
+              <div class="space-y-2">
+                <Label>Общая сумма</Label>
+                <div class="text-xl font-semibold">
+                  {{ formatCurrency(selectedOrder?.totalPrice || 0) }}
+                </div>
+              </div>
+            </div>
+
+            <div class="border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Товар</TableHead>
+                    <TableHead>Цена</TableHead>
+                    <TableHead>Количество</TableHead>
+                    <TableHead class="text-right">Сумма</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow v-for="item in selectedOrder?.products" :key="item.productId">
+                    <TableCell>
+                      <div class="flex items-center gap-3">
+                        <img 
+                          :src="item.product.imagePath" 
+                          class="w-12 h-12 rounded object-cover"
+                        />
+                        <div>
+                          <div>{{ item.product.name }}</div>
+                          <div class="text-sm text-gray-500">{{ item.product.description }}</div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>{{ formatCurrency(item.price) }}</TableCell>
+                    <TableCell>{{ item.quantity }}</TableCell>
+                    <TableCell class="text-right">
+                      {{ formatCurrency(item.price * item.quantity) }}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import '@/assets/css/main.css'
-import NavMenu from '@/components/NavMenu/NavMenu.vue';
-import { ref, reactive, onMounted } from 'vue'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
-import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Button } from '@/components/ui/button'
+import { RefreshCwIcon, Loader2Icon, EyeIcon, Trash2Icon } from 'lucide-vue-next'
 
 interface Product {
   id: number
   name: string
   description: string
   price: number
-  characteristic?: string
-  countProduct?: number
-  category?: number
-  imagePath?: string
+  characteristic: string
+  countProduct: number
+  category: number
+  imagePath: string
+}
+
+interface OrderProduct {
+  productId: number
+  product: Product
+  quantity: number
+  price: number
+}
+
+interface Order {
+  id: number
+  userId: number
+  totalPrice: number
+  status: number
+  dateCreated: string
+  products: OrderProduct[]
 }
 
 const form = ref({
@@ -167,8 +359,15 @@ const form = ref({
 
 const products = ref<Product[]>([])
 const loading = ref(false)
-
+const orders = ref<Order[]>([])
+const ordersLoading = ref(false)
+const ordersError = ref('')
+const searchQuery = ref('')
+const statusFilter = ref('all')
+const selectedOrder = ref<Order | null>(null)
+const isOrderDetailsOpen = ref(false)
 const editingProduct = ref<Product | null>(null)
+const orderToDelete = ref<number | null>(null)
 
 const editForm = reactive({
   name: '',
@@ -176,38 +375,43 @@ const editForm = reactive({
   price: 0,
 })
 
-// Загрузка изображения для нового товара
-async function uploadImage(event: Event) {
-  const target = event.target as HTMLInputElement
-  const file = target.files?.[0]
-  if (!file) return
+// Загрузка данных
+onMounted(() => {
+  loadProducts()
+  loadOrders()
+})
 
-  const formData = new FormData()
-  formData.append('file', file)
-
+async function loadProducts() {
+  loading.value = true
   try {
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      body: formData,
+    const response = await fetch('http://localhost:8080/product/top_product', {
+      credentials: 'include'
     })
-
-    if (!response.ok) throw new Error('Ошибка загрузки изображения')
-
-    const result = await response.json()
-    form.value.imagePath = result.imagePath
+    products.value = await response.json()
   } catch (error) {
-    console.error('Ошибка при загрузке изображения:', error)
-    alert('❌ Не удалось загрузить изображение')
+    console.error('Ошибка загрузки товаров:', error)
+  } finally {
+    loading.value = false
   }
 }
 
-// Создать новый товар
-async function submitProduct() {
-  if (!form.value.Name || !form.value.Price || !form.value.imagePath) {
-    alert('Пожалуйста, заполните все обязательные поля')
-    return
+async function loadOrders() {
+  ordersLoading.value = true
+  try {
+    const response = await fetch('http://localhost:8080/order/orders', {
+      credentials: 'include'
+    })
+    orders.value = await response.json()
+  } catch (error) {
+    ordersError.value = 'Ошибка загрузки заказов'
+    console.error(error)
+  } finally {
+    ordersLoading.value = false
   }
+}
 
+// Работа с товарами
+async function submitProduct() {
   try {
     const response = await fetch('http://localhost:8080/product/create', {
       method: 'POST',
@@ -221,52 +425,36 @@ async function submitProduct() {
         category: form.value.Category,
         imagePath: form.value.imagePath,
       }),
-      credentials: 'include',
+      credentials: 'include'
     })
+    
+    if (response.ok) {
+      await loadProducts()
+      form.value = {
+        Name: '',
+        Description: '',
+        Characteristic: '',
+        Price: 0,
+        CountProduct: 1,
+        Category: 1,
+        imagePath: '',
+      }
+    }
+  } catch (error) {
+    console.error('Ошибка создания товара:', error)
+  }
+}
 
-    if (!response.ok) throw new Error('Ошибка при создании товара')
-
-    alert('✅ Товар успешно создан!')
-    resetForm()
+async function deleteProduct(id: number) {
+  if (confirm('Удалить товар?')) {
+    await fetch(`http://localhost:8080/product/delete/${id}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    })
     await loadProducts()
-  } catch (error) {
-    console.error(error)
-    alert('❌ Ошибка при создании товара')
   }
 }
 
-function resetForm() {
-  form.value = {
-    Name: '',
-    Description: '',
-    Characteristic: '',
-    Price: 0,
-    CountProduct: 1,
-    Category: 1,
-    imagePath: '',
-  }
-}
-
-// Загрузить список товаров
-async function loadProducts() {
-  loading.value = true
-  try {
-    const response = await fetch('http://localhost:8080/product/top_product', {
-      credentials: 'include',
-    })
-    if (!response.ok) throw new Error('Ошибка загрузки товаров')
-
-    const data = await response.json()
-    products.value = data
-  } catch (error) {
-    console.error(error)
-    alert('❌ Ошибка при загрузке товаров')
-  } finally {
-    loading.value = false
-  }
-}
-
-// Начать редактирование товара (открыть попап)
 function startEdit(product: Product) {
   editingProduct.value = product
   editForm.name = product.name
@@ -274,89 +462,118 @@ function startEdit(product: Product) {
   editForm.price = product.price
 }
 
-// Отмена редактирования (закрыть попап)
+async function updateProduct() {
+  if (!editingProduct.value) return
+  
+  await fetch(`http://localhost:8080/product/update/${editingProduct.value.id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(editForm),
+    credentials: 'include'
+  })
+  
+  await loadProducts()
+  editingProduct.value = null
+}
+
 function cancelEdit() {
   editingProduct.value = null
 }
 
-// Обновить товар (отправить PUT запрос)
-async function updateProduct() {
-  if (!editingProduct.value) return
-
-  try {
-    const response = await fetch(`http://localhost:8080/product/update/${editingProduct.value.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: editForm.name,
-        description: editForm.description,
-        price: editForm.price,
-      }),
-      credentials: 'include',
-    })
-
-    if (!response.ok) throw new Error('Ошибка при обновлении товара')
-
-    alert('✅ Товар успешно обновлен!')
-    cancelEdit()
-    await loadProducts()
-  } catch (error) {
-    console.error(error)
-    alert('❌ Ошибка при обновлении товара')
-  }
-}
-
-// Удалить товар с подтверждением
-async function deleteProduct(id: number) {
-  if (!confirm('Вы уверены, что хотите удалить этот товар?')) return
-
-  try {
-    const response = await fetch(`http://localhost:8080/product/delete/${id}`, {
-      method: 'DELETE',
-      credentials: 'include',
-    })
-
-    if (!response.ok) throw new Error('Ошибка при удалении товара')
-
-    alert('✅ Товар успешно удален!')
-    await loadProducts()
-  } catch (error) {
-    console.error(error)
-    alert('❌ Ошибка при удалении товара')
-  }
-}
-
-// При загрузке компонента получаем товары
-onMounted(() => {
-  loadProducts()
+// Работа с заказами
+const filteredOrders = computed(() => {
+  return orders.value.filter(order => {
+    const matchesSearch = order.id.toString().includes(searchQuery.value)
+    const matchesStatus = statusFilter.value === 'all' || order.status.toString() === statusFilter.value
+    return matchesSearch && matchesStatus
+  })
 })
+
+async function updateOrderStatus(orderId: number, status: string) {
+  await fetch(`http://localhost:8080/order/orders_update/${orderId}`, {
+    method: 'PUT',
+    credentials: 'include'
+  })
+  await loadOrders()
+}
+
+function openOrderDetails(order: Order) {
+  selectedOrder.value = order
+  isOrderDetailsOpen.value = true
+}
+
+async function confirmDeleteOrder(id: number) {
+  if (confirm('Удалить заказ?')) {
+    await fetch(`http://localhost:8080/order/orders/${id}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    })
+    await loadOrders()
+  }
+}
+
+// Вспомогательные функции
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat('ru-RU', { 
+    style: 'currency', 
+    currency: 'RUB' 
+  }).format(amount)
+}
+
+function formatDate(dateString: string) {
+  return new Date(dateString).toLocaleDateString('ru-RU', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+function getStatusText(status: number) {
+  return {
+    0: 'Ожидает обработки',
+    1: 'В обработке',
+  }[status] || 'Неизвестный статус'
+}
+
+function getStatusBadgeVariant(status: number) {
+  return {
+    0: 'secondary',
+    1: 'default',
+  }[status] || 'default'
+}
+
+async function uploadImage(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file) return
+
+  const formData = new FormData()
+  formData.append('file', file)
+
+  try {
+    const response = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData
+    })
+    const { imagePath } = await response.json()
+    form.value.imagePath = imagePath
+  } catch (error) {
+    console.error('Ошибка загрузки изображения:', error)
+  }
+}
 </script>
 
 <style scoped>
-/* Простое оформление модального окна */
+.dash {
+  margin-bottom: 50px;
+}
+
 .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+  @apply fixed inset-0 bg-black/50 flex items-center justify-center;
 }
 
 .modal {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 0.5rem;
-  width: 400px;
-  max-width: 90%;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-.dash{
-        margin-bottom: 50px;
+  @apply bg-white p-6 rounded-lg max-w-md w-full;
 }
 </style>

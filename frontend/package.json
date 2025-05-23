@@ -13,6 +13,7 @@
     "@shadcn/ui": "^0.0.4",
     "@tanstack/vue-table": "^8.21.3",
     "@vueuse/core": "^12.8.2",
+    "chart.js": "^4.4.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "embla-carousel-vue": "^8.5.2",
@@ -26,6 +27,7 @@
     "tailwind-merge": "^3.0.2",
     "tailwindcss-animate": "^1.0.7",
     "vue": "latest",
+    "vue-chartjs": "^5.3.2",
     "vue-router": "latest",
     "vue-slick-carousel": "^1.0.6",
     "vue3-star-ratings": "^3.0.5"
