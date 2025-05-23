@@ -1,8 +1,11 @@
 .container{
-
+    
     display: grid;
-
+    max-width: 70%;
     margin-bottom: 50px;
+    @media (max-width: 768px) {
+        max-width: 100%;
+    }
 
 }
 

@@ -56,8 +56,8 @@ const handleKeyup = (event) => {
                 <NuxtLink to="/" class="nav--pc_link" exact-active-class="active">
                     <span class="nav--pc_icon nav--mob_icon__home"></span>
                 </NuxtLink>
-                <NuxtLink to="/categories" class="nav--pc_link" exact-active-class="active">
-                    <span class="nav--pc_icon nav--mob_icon__category"></span>
+                <NuxtLink to="/delivery" class="nav--pc_link" exact-active-class="active">
+                    <span class="nav--pc_icon nav--mob_icon__delivery"></span>
                 </NuxtLink>
                 <NuxtLink to="/cart" class="nav--pc_link" exact-active-class="active">
                     <span class="nav--pc_icon nav--pc_icon__cart"></span>

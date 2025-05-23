@@ -7,6 +7,7 @@
 	--icon-cart: url('@/assets/img/icon-cart.svg');
 	--icon-home: url('@/assets/img/icon-home.svg');
 	--icon-cat: url('@/assets/img/icon-cat.svg');
+	--icon-delivery-mob: url('@/assets/img/delivery-mob.png');
 }
 
 header {
@@ -240,11 +241,11 @@ header {
 	left: 0;
 }
 
-.nav--mob_icon__category {
+.nav--mob_icon__delivery {
 	position: relative;
 }
 
-.nav--mob_icon__category::before {
+.nav--mob_icon__delivery::before {
 	content: '';
 	width: 34px;
 	height: 50px;
@@ -254,9 +255,9 @@ header {
 	mask-size: auto;
 	-webkit-mask-repeat: no-repeat;
 	mask-repeat: no-repeat;
-	-webkit-mask-image: var(--icon-cat);
-	-webkit-mask-image: var(--icon-cat);
-	mask-image: var(--icon-cat);
+	-webkit-mask-image: var(--icon-delivery-mob);
+	-webkit-mask-image: var(--icon-delivery-mob);
+	mask-image: var(--icon-delivery-mob);
 	background-color: #000000;
 	position: absolute;
 	top: 0;

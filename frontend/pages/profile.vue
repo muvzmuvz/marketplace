@@ -116,12 +116,12 @@ const viewAllOrders = () => {
                     </div>
                 </Card>
             </div>
-            <ProductViewHistory/>
 
             <!-- Кнопка для просмотра всех заказов -->
             <div v-if="user?.orders.length > 2" class="text-center mt-4">
                 <Button @click="viewAllOrders" variant="outline">Посмотреть все заказы</Button>
             </div>
+            <ProductViewHistory/>
         </div>
         
         
