@@ -54,11 +54,7 @@
     </div>
 
     <div v-if="!loading && !products.length" class="empty-history">
-      <img 
-        src="@/assets/img/empty-history.svg" 
-        alt="Пустая история" 
-        class="empty-image"
-      />
+
       <p>Вы пока ничего не смотрели</p>
     </div>
   </div>

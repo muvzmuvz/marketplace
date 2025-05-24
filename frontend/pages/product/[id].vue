@@ -28,6 +28,11 @@
           <div class="price-section">
             <span class="price">{{ formattedPrice }}</span>
           </div>
+          <div class="average-rating" v-if="comments.length">
+            <span>Средняя оценка:</span>
+            <span class="stars">{{ getStars(Math.round(averageRating)) }}</span>
+            <span class="number">({{ averageRating }})</span>
+          </div>
           <div class="details-section">
             <h2>Описание</h2>
             <p class="description">{{ product.description }}</p>
@@ -65,12 +70,25 @@
       <!-- Отзывы -->
       <div class="reviews-section">
         <h2>Отзывы ({{ comments.length }})</h2>
+
         <div class="new-review">
           <textarea
             v-model="newComment"
             placeholder="Оставьте ваш отзыв..."
             class="review-input"
           ></textarea>
+          <div class="rating-stars">
+            <span
+              v-for="n in 5"
+              :key="n"
+              class="star"
+              :class="{ active: n <= productEvaluation }"
+              @click="productEvaluation = n"
+            >
+              ★
+            </span>
+            <span class="rating-number">{{ productEvaluation }} / 5</span>
+          </div>
           <Button @click="postComment">Отправить отзыв</Button>
         </div>
 
@@ -83,6 +101,9 @@
             <div class="review-header">
               <span class="user">Пользователь #{{ comment.userId }}</span>
               <span class="date">{{ formatDate(comment.dateCreated) }}</span>
+            </div>
+            <div class="review-rating-stars">
+              {{ getStars(comment.productEvaluation || 0) }}
             </div>
             <p class="review-text">{{ comment.description }}</p>
           </div>
@@ -117,7 +138,10 @@ const product = ref(null)
 const isLoading = ref(true)
 const comments = ref([])
 const newComment = ref('')
+const productEvaluation = ref(5) // по умолчанию 5 звёзд
 const activeIndex = ref(0)
+const userId = ref(null)
+
 
 const fetchProduct = async () => {
   try {
@@ -134,6 +158,20 @@ const fetchProduct = async () => {
     isLoading.value = false
   }
 }
+const fetchUser = async () => {
+  try {
+    const response = await fetch('http://localhost:8080/user/user', {
+      credentials: 'include'
+    })
+    if (!response.ok) throw new Error('Ошибка загрузки пользователя')
+    const data = await response.json()
+    userId.value = data.id
+  } catch (error) {
+    console.error('Ошибка при получении пользователя:', error)
+    alert('Не удалось получить данные пользователя. Отзывы не будут отправлены.')
+  }
+}
+
 
 const fetchComments = async () => {
   try {
@@ -145,29 +183,53 @@ const fetchComments = async () => {
   }
 }
 
+
 const postComment = async () => {
   if (!newComment.value.trim()) {
     alert('Отзыв не может быть пустым')
     return
   }
+
+  if (!userId.value) {
+    alert('Вы не авторизованы. Нельзя отправить отзыв.')
+    return
+  }
+
   try {
+    const review = {
+      productId: Number(productId),
+      description: newComment.value,
+      productEvaluation: productEvaluation.value,
+      rating: productEvaluation.value,
+      dateCreated: new Date().toISOString(),
+      userId: userId.value
+    }
+
     const response = await fetch('http://localhost:8080/review/create_review', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: '*/*'
+      },
       credentials: 'include',
-      body: JSON.stringify({
-        productId: Number(productId),
-        description: newComment.value
-      })
+      body: JSON.stringify(review)
     })
-    if (!response.ok) throw new Error('Ошибка отправки отзыва')
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(JSON.stringify(errorData))
+    }
+
     newComment.value = ''
+    productEvaluation.value = 5
     await fetchComments()
   } catch (error) {
-    console.error('Ошибка:', error)
-    alert('Не удалось отправить отзыв')
+    console.error('Ошибка отправки отзыва:', error)
+    alert('Не удалось отправить отзыв.')
   }
 }
+
+
 
 const addToCart = async () => {
   try {
@@ -213,10 +275,22 @@ const formatDate = (dateString) => {
   })
 }
 
+const getStars = (count) => {
+  return '★'.repeat(count) + '☆'.repeat(5 - count)
+}
+
+const averageRating = computed(() => {
+  if (comments.value.length === 0) return 0
+  const sum = comments.value.reduce((total, c) => total + (c.productEvaluation || 0), 0)
+  return (sum / comments.value.length).toFixed(1)
+})
+
 onMounted(async () => {
+  await fetchUser()
   await fetchProduct()
   await fetchComments()
 })
+
 
 const goBack = () => {
   router.go(-1)
