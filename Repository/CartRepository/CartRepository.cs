@@ -130,6 +130,7 @@ public class CartRepository : ICartRepository
         return await _context.Carts
             .Include(c => c.CartProducts)
             .ThenInclude(cp => cp.Product)
+            .ThenInclude(product => product.Images)
             .FirstOrDefaultAsync(c => c.UserId == userId) ??
             throw new NotFoundExeption("Корзина не создана");
     }

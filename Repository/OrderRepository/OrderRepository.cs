@@ -38,6 +38,7 @@ public class OrderRepository : IOrderRepository
         var order = await _context.Orders
             .Include(order => order.Products)
             .ThenInclude(pr => pr.Product)
+            .ThenInclude(product => product.Images)
             .FirstOrDefaultAsync(ord => ord.Id == orderId);
         if( order == null )
         {
@@ -52,6 +53,7 @@ public class OrderRepository : IOrderRepository
         var orders =  _context.Orders
             .Include(ord => ord.Products)
             .ThenInclude(pr => pr.Product)
+            .ThenInclude(product => product.Images)
             .Where(order => order.UserId == userid);
 
         return await orders.ToListAsync();
@@ -83,6 +85,8 @@ public class OrderRepository : IOrderRepository
     {
         var order = await _context.Orders
             .Include(order => order.Products)
+            .ThenInclude(pr => pr.Product)
+            .ThenInclude(product => product.Images)
             .FirstOrDefaultAsync(ord => ord.Id == orderId);
         if(order == null)
         {

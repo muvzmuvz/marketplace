@@ -63,6 +63,13 @@ public class ProductService : IProductService
         return await _productRepository.GetAllAsync();
     }
 
+    public Task<List<Product>> GetManagerProducts(int managerId)
+    {
+        var products = _productRepository.GetProductByManagerIdAsync(managerId);
+
+        return products;
+    }
+
     public async Task<Product> GetProductAsync(int productId)
     {
         var product = await _productRepository.GetByIdAsync(productId);

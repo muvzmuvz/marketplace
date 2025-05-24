@@ -66,6 +66,16 @@ public class ProductRepository : IProductRepository
         return products;
     }
 
+    public async Task<List<Product>> GetProductByManagerIdAsync(int managerId)
+    {
+        var products = await _context.Products
+            .Include(image => image.Images)
+            .Where(p => p.UserId == managerId)
+            .ToListAsync();
+
+        return products;
+    }
+
     public  async Task<List<Product>> GetProductOdPage(int id)
     {
         int lengthPage = 10;

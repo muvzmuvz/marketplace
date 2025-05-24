@@ -52,6 +52,7 @@ public class ProductViewHistoryRepository : IProductViewHistoryRepository
         var viewHistories = await _appDbContext.ProductViewHistories
         .Where(h => h.UserId == userId)
         .Include(h => h.Product) 
+        .ThenInclude(product => product.Images)
         .ToListAsync(); 
 
         return viewHistories.Select(h => h.Product).ToList();
@@ -60,6 +61,8 @@ public class ProductViewHistoryRepository : IProductViewHistoryRepository
     public async Task<Product> GetProduct(int userId, int productId)
     {
         var product = await _appDbContext.ProductViewHistories
+            .Include(h => h.Product)
+            .ThenInclude(product => product.Images)
             .FirstOrDefaultAsync(history => history.UserId == userId && history.ProductId == productId);
 
         if(product == null)
@@ -73,6 +76,8 @@ public class ProductViewHistoryRepository : IProductViewHistoryRepository
     public async Task UpdateProducthistory(int userId, Product product,int productId)
     {
         var viewHistory = await _appDbContext.ProductViewHistories
+            .Include(h => h.Product)
+            .ThenInclude(product => product.Images)
             .FirstOrDefaultAsync(h => h.UserId==userId && h.ProductId == productId);
             
         if (viewHistory == null)
