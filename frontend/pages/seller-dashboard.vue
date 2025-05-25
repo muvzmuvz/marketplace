@@ -637,7 +637,7 @@ function getStatusBadgeVariant(status: number) {
                   <TableRow v-for="item in selectedOrder?.products" :key="item.productId">
                     <TableCell>
                       <div class="flex items-center gap-3">
-                        <img v-if="item.product.images.length" :src="item.product.images[0].path"
+                        <img v-if="item.product.images[0].path.length" :src="item.product.images[0].path"
                           class="w-12 h-12 rounded object-cover" />
                         <div>
                           <div>{{ item.product.name }}</div>

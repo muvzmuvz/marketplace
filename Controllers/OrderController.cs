@@ -82,7 +82,7 @@ public class OrderController : ControllerBase
 
     [HttpPut]
     [Route("order_update{orderId}")]
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Seller, Admin")]
     public async Task<IActionResult> UpdateOrderAsync(OrderDto orderDto, int orderId)
     {
         var userId = _jwtService.GetIdUser(HttpContext);
@@ -95,7 +95,7 @@ public class OrderController : ControllerBase
 
     [HttpDelete]
     [Route("orders/{orderId}")]
-    [Authorize(Roles ="Admin")]
+    [Authorize(Roles = "Seller, Admin")]
     public async Task<IActionResult> PickUpAnOrder(int orderId)
     {
         await _orderService.RemoveOrderFromDeliveryAsync(orderId);

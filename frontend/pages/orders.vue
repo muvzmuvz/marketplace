@@ -14,10 +14,18 @@ const fetchOrders = async () => {
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include'
         })
+        console.log(orders.value.images)
 
         if (!response.ok) throw new Error('Ошибка при загрузке заказов')
 
-        orders.value = await response.json()
+        orders.value = data.map(item => ({
+        id: orders.product.id,
+        name: orders.product.name,
+        price: orders.product.price,
+        description: order.product.description,
+        images: orders.product.images[0].path,
+      }));
+
     } catch (error) {
         console.error(error)
         router.push('/auth/login') // В случае ошибки, перенаправляем на страницу авторизации
@@ -26,9 +34,10 @@ const fetchOrders = async () => {
     }
 }
 
+
 onMounted(fetchOrders)
 </script>
-
+console.log('asdasd')
 <template>
     <NavMenu />
     <div class="max-w l mx-auto p-6 space-y-6 container">
@@ -55,7 +64,7 @@ onMounted(fetchOrders)
                         <p><strong>Товары в заказе:</strong></p>
                         <ul>
                             <li v-for="product in order.products" :key="product.productId">
-                                <img :src="product.product.imagePath" alt="product.name" class="w-30 h-20 inline-block mr-2" />
+                                <img :src="porduct.product.images" alt="product.name" class="w-30 h-20 inline-block mr-2" />
                                 {{ product.product.name }} - {{ product.quantity }} шт.
                             </li>
                         </ul>
