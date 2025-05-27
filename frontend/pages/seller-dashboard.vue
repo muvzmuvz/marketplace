@@ -119,7 +119,7 @@ onMounted(() => {
 async function loadProducts() {
   loading.value = true
   try {
-    const response = await fetch('http://localhost:8080/product/top_product', {
+    const response = await fetch('http://localhost:8080/product/get_manager_product', {
       credentials: 'include'
     })
     products.value = await response.json()
