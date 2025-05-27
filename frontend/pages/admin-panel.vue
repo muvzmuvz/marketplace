@@ -258,10 +258,6 @@ function startEdit(product: Product) {
   editForm.name = product.name
   editForm.description = product.description
   editForm.price = product.price
-  editForm.images = product.images
-  editForm.count = product.countProduct
-  editForm.characteristic = product.characteristic
-  editForm.category = product.category
 }
 
 async function updateProduct() {
@@ -369,7 +365,7 @@ function getStatusBadgeVariant(status: number) {
       <Tabs default-value="crm" class="w-full">
         <TabsList class="grid w-full grid-cols-3">
           <TabsTrigger value="crm">CRM</TabsTrigger>
-          <absTrigger value="create">Создать товар</absTrigger>
+          <TabsTrigger value="create">Создать товар</TabsTrigger>
           <TabsTrigger value="manage">Управление товарами</TabsTrigger>
         </TabsList>
 
@@ -500,7 +496,7 @@ function getStatusBadgeVariant(status: number) {
                 <div class="space-y-4">
                   <Label>Изображения товара</Label>
                   <input type="file" accept="image/*" multiple @change="uploadImages"
-                    class="block w-full text-sm text-gray-500 text-hidden file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90" />
+                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90" />
                   <div class="flex flex-wrap gap-2 mt-2">
                     <div v-for="(image, index) in form.images" :key="index" class="relative group">
                       <img :src="image.path" class="w-32 h-32 object-cover rounded-lg border" />
@@ -586,19 +582,12 @@ function getStatusBadgeVariant(status: number) {
               <Label>Описание</Label>
               <Textarea v-model="editForm.description" />
             </div>
-                        <div class="spce-y-2">
-              <Label>Характеристики</Label>
-              <Textarea v-model="editForm.characteristic"></Textarea>
-            </div>
-                        <div class="space-y-2">
-              <Label>Количество</Label>
-              <Input type="number" v-model.number="editForm.count" />
-            </div>
+
             <div class="space-y-2">
               <Label>Цена</Label>
               <Input type="number" v-model.number="editForm.price" />
             </div>
-            
+
             <div class="flex justify-end gap-2">
               <Button variant="outline" @click="cancelEdit">Отмена</Button>
               <Button @click="updateProduct">Сохранить</Button>
@@ -678,9 +667,6 @@ function getStatusBadgeVariant(status: number) {
 
 
 <style scoped>
-.text-hidden{
-  overflow: hidden;
-}
 .dash {
   margin-bottom: 50px;
 }
