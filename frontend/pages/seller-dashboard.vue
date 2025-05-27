@@ -34,6 +34,12 @@ interface Order {
   dateCreated: string
   products: OrderProduct[]
 }
+interface User {
+  id: number
+  name: string
+  email: string
+  role: number
+}
 
 const form = reactive({
   name: '',
@@ -95,7 +101,11 @@ const editingProduct = ref<Product | null>(null)
 const editForm = reactive({
   name: '',
   description: '',
-  price: 0
+  price: 0,
+  images: [] as ProductImage[],
+  countProduct: 1,
+  characteristic: '',
+  category: 1
 })
 
 const isEditModalOpen = computed({
@@ -259,7 +269,7 @@ function startEdit(product: Product) {
   editForm.description = product.description
   editForm.price = product.price
   editForm.images = product.images
-  editForm.count = product.countProduct
+  editForm.count = form.countProduct
   editForm.characteristic = product.characteristic
   editForm.category = product.category
 }
@@ -268,22 +278,34 @@ async function updateProduct() {
   if (!editingProduct.value) return
 
   try {
+    const requestBody = {
+      name: editForm.name,
+      description: editForm.description,
+      price: editForm.price,
+      images: editForm.images.map(img => ({ path: img.path })),
+      countProduct: editForm.count,
+      characteristic: editForm.characteristic,
+      category: editForm.category
+    }
+
     const response = await fetch(`http://localhost:8080/product/update/${editingProduct.value.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editForm),
+      body: JSON.stringify(requestBody),
       credentials: 'include'
     })
 
-    if (!response.ok) throw new Error('Ошибка обновления')
+    if (!response.ok) throw new Error('Ошибка обновления товара')
 
     await loadProducts()
     editingProduct.value = null
+    alert('✅ Товар успешно обновлен')
   } catch (error) {
     console.error(error)
     alert('❌ Ошибка при обновлении товара')
   }
 }
+
 
 const filteredOrders = computed(() => {
   return orders.value.filter(order => {
@@ -369,7 +391,7 @@ function getStatusBadgeVariant(status: number) {
       <Tabs default-value="crm" class="w-full">
         <TabsList class="grid w-full grid-cols-3">
           <TabsTrigger value="crm">CRM</TabsTrigger>
-          <absTrigger value="create">Создать товар</absTrigger>
+          <TabsTrigger value="create">Создать товар</TabsTrigger>
           <TabsTrigger value="manage">Управление товарами</TabsTrigger>
         </TabsList>
 
