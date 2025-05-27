@@ -381,6 +381,10 @@ function getStatusBadgeVariant(status: number) {
     1: 'default',
   }[status] || 'default'
 }
+
+function cancelEdit() {
+  editingProduct.value = null
+}
 </script>
 
 
