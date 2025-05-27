@@ -132,9 +132,6 @@ public class ProductController : ControllerBase
 
             var newProduct = await _productService.UpdateProductAsync(product, productId);
 
-            var userId = _jwtService.GetIdUser(HttpContext);
-            await _productViewHistoryService.UpdateHistoryAsync(product, userId,productId);
-
             _logger.LogInformation("Продукт с ID {ProductId} успешно обновлен", productId);
             return Ok(newProduct);
         }
