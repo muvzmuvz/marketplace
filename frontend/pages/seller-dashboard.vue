@@ -570,9 +570,9 @@ function cancelEdit() {
                     <div class="flex items-start gap-4">
                       <img v-if="product.images.length" :src="product.images[0].path" :alt="product.name"
                         class="w-24 h-24 rounded-lg object-cover" />
-                      <div class="flex-1">
-                        <h3 class="font-semibold">{{ product.name }}</h3>
-                        <p class="text-sm text-gray-500">{{ product.description }}</p>
+                      <div class="flex-1 width">
+                        <h3 class="font-semibold elipse">{{ product.name }}</h3>
+                        <p class="text-sm text-gray-500 elipse">{{ product.description }}</p>
                         <div class="mt-2 text-lg font-semibold">
                           {{ formatCurrency(product.price) }}
                         </div>
@@ -673,11 +673,11 @@ function cancelEdit() {
                 <TableBody>
                   <TableRow v-for="item in selectedOrder?.products" :key="item.productId">
                     <TableCell>
-                      <div class="flex items-center gap-3">
+                      <div class="flex items-center gap-3 ">
                         <img v-if="item.product.images[0].path.length" :src="item.product.images[0].path"
                           class="w-12 h-12 rounded object-cover" />
                         <div>
-                          <div>{{ item.product.name }}</div>
+                          <div class="width elipse">{{ item.product.name }}</div>
                           <div class="text-sm text-gray-500">{{ item.product.description }}</div>
                         </div>
                       </div>
@@ -718,4 +718,15 @@ function cancelEdit() {
 .modal {
   @apply bg-white p-6 rounded-lg max-w-md w-full;
 }
+
+.width{
+  max-width: 150px;
+}
+.elipse{
+
+  white-space: nowrap;       /* Не переносить текст на новую строку */
+  overflow: hidden;          /* Скрыть всё, что не помещается */
+  text-overflow: ellipsis;   /* Добавить "..." в конце */
+}
+
 </style>
