@@ -612,7 +612,9 @@ async function loadReviews() {
   reviewsLoading.value = true
   reviewsError.value = null
   try {
-    const res = await fetch('http://localhost:8080/review/reviews_product/all')
+    const res = await fetch('http://localhost:8080/review/reviews', {
+      credentials: 'include' // Добавляем передачу куки
+    })
     if (!res.ok) throw new Error('Ошибка сети')
     reviews.value = await res.json()
   } catch (e) {
