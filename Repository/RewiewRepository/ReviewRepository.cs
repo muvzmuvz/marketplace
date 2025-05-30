@@ -43,6 +43,13 @@ public class ReviewRepository : IReviewRepository
         return reviews;
     }
 
+    public async Task<List<Review>> GetAllReviews()
+    {
+        var reviews = await _appDbContext.Reviews.ToListAsync();
+
+        return reviews;
+    }
+
     public async Task<List<Review>> GetAllUserReviewsAsync(int userId)
     {
         var reviews = await _appDbContext.Reviews

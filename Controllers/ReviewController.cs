@@ -90,4 +90,14 @@ public class ReviewController : ControllerBase
 
         return Ok(review);
     }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet]
+    [Route("reviews")]
+    public async Task<IActionResult> GetAllReviewsAsync()
+    {
+        var reviews = await _reviewService.GetAllReviewsAsync();
+
+        return Ok(reviews);
+    }
 }
