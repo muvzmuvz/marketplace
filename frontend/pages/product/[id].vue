@@ -42,10 +42,18 @@
             <pre class="characteristics">{{ product.characteristic }}</pre>
           </div>
           <div class="actions-section">
-            <Button class="add-to-cart" @click="addToCart">
-              <ShoppingCartIcon class="icon" />
-              Добавить в корзину
-            </Button>
+<Button
+  :class="[
+    'add-to-cart flex items-center gap-2 px-4 py-2 rounded-md text-white font-medium transition-all duration-500',
+    isAdded ? 'bg-green-500 hover:bg-green-600' : 'bg-blue-600 hover:bg-blue-700'
+  ]"
+  @click="addToCart"
+>
+  <component :is="isAdded ? CheckIcon : ShoppingCartIcon" class="w-5 h-5 transition-transform duration-300" />
+  <span class="transition-all duration-300">
+    {{ isAdded ? 'Добавлено' : 'Добавить в корзину' }}
+  </span>
+</Button>
           </div>
         </div>
       </div>
@@ -127,7 +135,8 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ArrowLeftIcon,
-  ShoppingCartIcon
+  ShoppingCartIcon,
+  CheckIcon
 } from 'lucide-vue-next'
 
 const route = useRoute()
@@ -142,6 +151,7 @@ const productEvaluation = ref(5) // по умолчанию 5 звёзд
 const activeIndex = ref(0)
 const userId = ref(null)
 
+const isAdded = ref(false)
 
 const fetchProduct = async () => {
   try {
@@ -241,7 +251,13 @@ const addToCart = async () => {
       }
     )
     if (!response.ok) throw new Error('Ошибка добавления в корзину')
-    alert('Товар добавлен в корзину')
+
+    isAdded.value = true
+
+    // Возвращаем в начальное состояние через 2 секунды
+    setTimeout(() => {
+      isAdded.value = false
+    }, 2000)
   } catch (error) {
     console.error('Ошибка:', error)
     alert('Не удалось добавить товар в корзину')

@@ -30,7 +30,7 @@ const handleKeyup = (event) => {
         <nav>
             <div class="nav--container">
                 <div class="nav--logo">
-                    <NuxtLink to="/" class="logo">WildBobr</NuxtLink>
+                    <NuxtLink to="/" class="logo neon-text">WildBobr</NuxtLink>
                 </div>
                 <div class="nav--search">
                     <Input v-model="searchQuery" type="search" placeholder="Найти на WildBobr"
