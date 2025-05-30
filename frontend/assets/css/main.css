@@ -8,7 +8,17 @@
 	background-color: var(--caret-color);
 	color: white;
 }
+.card-coast{
+	font-weight: 600;
+}
 
+.card--descripion{
+	font-weight: 600;
+}
+
+.card--ps{
+	
+}
 .card {
 	display: grid;
 	grid-template-columns: repeat(6, calc(16.6667% - 25px));

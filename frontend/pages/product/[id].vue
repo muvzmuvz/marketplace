@@ -210,7 +210,6 @@ const fetchUser = async () => {
     userId.value = data.id
   } catch (error) {
     console.error('Ошибка при получении пользователя:', error)
-    alert('Не удалось получить данные пользователя. Отзывы не будут отправлены.')
   }
 }
 

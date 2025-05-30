@@ -46,8 +46,8 @@
             />
           </div>
           <div class="product-details">
-            <div class="product-price">{{ formattedPrice(product.price) }}</div>
-            <div class="product-name">{{ product.name }}</div>
+             <div class="product-name">{{ product.name }}</div>
+            <div class="product-price text-gray-700">{{ formattedPrice(product.price) }}</div>
           </div>
         </div>
       </div>
@@ -270,15 +270,15 @@ export default {
 }
 
 .product-price {
-  color: black;
   font-weight: 700;
   font-size: 16px;
   margin-bottom: 6px;
 }
 
 .product-name {
-  font-size: 14px;
-  color: #444;
+  font-size: 16px;
+  color: black;
+  font-weight: 600;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
