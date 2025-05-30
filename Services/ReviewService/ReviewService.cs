@@ -63,6 +63,15 @@ public class ReviewService : IReviewService
         return reviewsDto;
     }
 
+    public async Task<List<ReviewResponseDto>> GetAllReviewsAsync()
+    {
+        var reviews = await _reviewRepository.GetAllReviews();
+        var reviewsDto = _mapper.Map<List<ReviewResponseDto>>(reviews);
+
+        return reviewsDto;
+
+    }
+
     public async Task<List<ReviewResponseDto>> GetAllUserReviewsAsync(int userId)
     {
         var reviews = await _reviewRepository.GetAllUserReviewsAsync(userId);

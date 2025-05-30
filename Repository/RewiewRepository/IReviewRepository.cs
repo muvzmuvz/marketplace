@@ -10,4 +10,5 @@ public interface IReviewRepository
     Task CreateRewiewAsync(Review review);
     Task DeleteRewiewAsync(int rewiewId);
     Task UpdateRewiewAsync(Review newReview, int reviewId);
+    Task<List<Review>> GetAllReviews();
 }
