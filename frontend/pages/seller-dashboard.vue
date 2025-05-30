@@ -143,7 +143,7 @@ async function loadProducts() {
 async function loadOrders() {
   ordersLoading.value = true
   try {
-    const response = await fetch('http://localhost:8080/order/orders', {
+    const response = await fetch('http://localhost:8080/order/OrdersOfSeller', {
       credentials: 'include'
     })
     orders.value = await response.json()
