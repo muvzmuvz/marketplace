@@ -338,6 +338,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { 
   RefreshCwIcon, 
   Loader2Icon, 
@@ -346,9 +347,11 @@ import {
   Edit2Icon
 } from 'lucide-vue-next'
 
-const isAdmin = ref(true)
+
+const router = useRouter()
 
 // Пользователи
+const userData = ref(null)
 const users = ref([])
 const usersLoading = ref(false)
 const usersError = ref(null)
@@ -377,6 +380,36 @@ const selectedOrder = ref(null)
 const isOrderDetailsOpen = ref(false)
 const searchQuery = ref('')
 const statusFilter = ref('all')
+const isLoading = ref(true)
+
+const isAdmin = computed(() => {
+  return userData.value?.role === 0
+})
+
+const fetchUserData = async () => {
+  try {
+    const response = await fetch('http://localhost:8080/user/user', {
+      method: 'GET',
+      credentials: 'include'
+    })
+
+    if (!response.ok) throw new Error('Ошибка авторизации')
+    
+    userData.value = await response.json()
+    
+    // Перенаправление если не администратор
+    if (userData.value.role !== 0) {
+      router.push('/auth/admin-login')
+      return
+    }
+    
+  } catch (error) {
+    console.error('Ошибка:', error)
+    router.push('/auth/admin-login')
+  } finally {
+    isLoading.value = false
+  }
+}
 
 // Отзывы
 const reviews = ref([])
@@ -649,6 +682,7 @@ onMounted(() => {
   loadProducts()
   loadOrders()
   loadReviews()
+  fetchUserData()
 })
 </script>
 
