@@ -412,7 +412,7 @@ const statusFilter = ref('all')
 const isLoading = ref(true)
 
 const isAdmin = computed(() => {
-  return userData.value?.role === 2
+  return userData.value?.role === 0
 })
 
 const fetchUserData = async () => {
@@ -427,7 +427,7 @@ const fetchUserData = async () => {
     userData.value = await response.json()
     
     // Перенаправление если не администратор
-    if (userData.value.role !== 2) {
+    if (userData.value.role !== 0) {
       router.push('/auth/admin-login')
       return
     }
