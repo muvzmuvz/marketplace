@@ -201,8 +201,9 @@
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Все статусы</SelectItem>
-                    <SelectItem value="0">Ожидает обработки</SelectItem>
-                    <SelectItem value="1">В обработке</SelectItem>
+                    <SelectItem value="0">В сборке</SelectItem>
+                    <SelectItem value="1">В пути</SelectItem>
+                    <SelectItem value="2">Завершен</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -236,8 +237,10 @@
                             <SelectValue :placeholder="getStatusText(order.status)" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="0">Ожидает обработки</SelectItem>
-                            <SelectItem value="1">В обработке</SelectItem>
+                    <SelectItem value="all">Все статусы</SelectItem>
+                    <SelectItem value="0">В сборке</SelectItem>
+                    <SelectItem value="1">В пути</SelectItem>
+                    <SelectItem value="2">Завершен</SelectItem>
                           </SelectContent>
                         </Select>
                       </TableCell>
@@ -483,10 +486,10 @@ function formatCurrency(value) {
 
 // Статусы заказов
 const statusMap = {
-  0: 'Ожидает обработки',
-  1: 'В обработке',
-  2: 'Отправлен',
-  3: 'Завершён',
+  0: 'В сборке',
+  1: 'В пути',
+  2: 'Завершён',
+
 }
 
 function getStatusText(status) {

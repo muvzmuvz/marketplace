@@ -377,8 +377,9 @@ function formatDate(dateString: string) {
 
 function getStatusText(status: number) {
   return {
-    0: 'Ожидает обработки',
-    1: 'В обработке',
+    0: 'В сборке',
+    1: 'В пути',
+    2: 'Завершен'
   }[status] || 'Неизвестный статус'
 }
 
@@ -435,8 +436,9 @@ function cancelEdit() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Все статусы</SelectItem>
-                      <SelectItem value="0">Ожидает обработки</SelectItem>
-                      <SelectItem value="1">В обработке</SelectItem>
+                      <SelectItem value="0">В сборке</SelectItem>
+                      <SelectItem value="1">В пути</SelectItem>
+                      <SelectItem value="2">Завершен</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -470,8 +472,9 @@ function cancelEdit() {
                               <SelectValue :placeholder="getStatusText(order.status)" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="0">Ожидает обработки</SelectItem>
-                              <SelectItem value="1">В обработке</SelectItem>
+                              <SelectItem value="0">В сборке</SelectItem>
+                              <SelectItem value="1">В пути</SelectItem>
+                              <SelectItem value="1">Завершен</SelectItem>
                             </SelectContent>
                           </Select>
                         </TableCell>

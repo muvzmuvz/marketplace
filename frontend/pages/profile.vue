@@ -8,6 +8,33 @@ const router = useRouter()
 const user = ref(null)
 const isLoading = ref(true)
 
+const getStatusText = (status) => {
+  switch (status) {
+    case 0:
+      return 'В сборке'
+    case 1:
+      return 'В пути'
+    case 2:
+      return 'Завершён'
+    default:
+      return 'Неизвестно'
+  }
+}
+
+const getStatusClass = (status) => {
+  switch (status) {
+    case 0:
+      return 'text-yellow-500'
+    case 1:
+      return 'text-blue-500'
+    case 2:
+      return 'text-green-600'
+    default:
+      return 'text-gray-400'
+  }
+}
+
+
 const fetchProfile = async () => {
     try {
         const response = await fetch('http://localhost:8080/user/user', {
@@ -105,12 +132,12 @@ const viewAllOrders = () => {
   >
     <p class="font-semibold text-lg">Заказ #{{ order.id }}</p>
     <p class="text-sm">Сумма: <span class="font-medium">{{ order.totalPrice }} ₽</span></p>
-    <p class="text-sm">
-      Статус:
-      <span :class="order.status === 0 ? 'text-orange-500' : 'text-green-600'">
-        {{ order.status === 0 ? 'В пути' : 'Завершен' }}
-      </span>
-    </p>
+<p class="text-sm">
+  Статус:
+  <span :class="[getStatusClass(order.status), 'font-medium']">
+    {{ getStatusText(order.status) }}
+  </span>
+</p>
 
     <!-- Товары -->
     <div class="mt-2">

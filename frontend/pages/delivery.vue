@@ -29,6 +29,32 @@ const fetchOrders = async () => {
   }
 }
 
+const getStatusText = (status) => {
+  switch (status) {
+    case 0:
+      return 'В сборке'
+    case 1:
+      return 'В пути'
+    case 2:
+      return 'Завершён'
+    default:
+      return 'Неизвестно'
+  }
+}
+
+const getStatusClass = (status) => {
+  switch (status) {
+    case 0:
+      return 'text-yellow-500'
+    case 1:
+      return 'text-blue-500'
+    case 2:
+      return 'text-green-600'
+    default:
+      return 'text-gray-400'
+  }
+}
+
 onMounted(fetchOrders)
 </script>
 
@@ -59,15 +85,12 @@ onMounted(fetchOrders)
     <p class="text-sm text-gray-600 mb-2">
       Сумма: <span class="font-medium">{{ order.totalPrice }} ₽</span>
     </p>
-    <p class="text-sm mb-3">
-      Статус:
-      <span
-        :class="order.status === 0 ? 'text-yellow-500' : 'text-green-600'"
-        class="font-medium"
-      >
-        {{ order.status === 0 ? 'В пути' : 'Завершен' }}
-      </span>
-    </p>
+<p class="text-sm mb-3">
+  Статус:
+  <span :class="[getStatusClass(order.status), 'font-medium']">
+    {{ getStatusText(order.status) }}
+  </span>
+</p>
 
     <!-- Ограничение высоты для компактности -->
     <div class="space-y-3 max-h-36 overflow-y-auto pr-1">
