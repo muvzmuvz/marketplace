@@ -39,7 +39,7 @@
           </button>
           <div class="image-container">
             <img 
-              :src="product.images.path" 
+              :src="product.images[0].path" 
               :alt="product.name" 
               class="product-image"
               loading="lazy"
@@ -205,7 +205,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: fill;
   mix-blend-mode: multiply;
 }
 
@@ -214,7 +214,7 @@ export default {
 }
 
 .product-price {
-  color: #b10080;
+  color: black;
   font-weight: 700;
   font-size: 16px;
   margin-bottom: 6px;

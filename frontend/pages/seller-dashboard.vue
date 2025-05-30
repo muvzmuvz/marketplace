@@ -269,7 +269,7 @@ function startEdit(product: Product) {
   editForm.description = product.description
   editForm.price = product.price
   editForm.images = product.images
-  editForm.count = form.countProduct
+  editForm.count = product.countProduct
   editForm.characteristic = product.characteristic
   editForm.category = product.category
 }
@@ -568,13 +568,18 @@ function cancelEdit() {
                 <Card v-for="product in products" :key="product.id">
                   <CardContent class="p-4 space-y-4">
                     <div class="flex items-start gap-4">
+                       <router-link :to="`/product/${product.productId}`">
                       <img v-if="product.images.length" :src="product.images[0].path" :alt="product.name"
                         class="w-24 h-24 rounded-lg object-cover" />
+                        </router-link>
                       <div class="flex-1 width">
                         <h3 class="font-semibold elipse">{{ product.name }}</h3>
                         <p class="text-sm text-gray-500 elipse">{{ product.description }}</p>
                         <div class="mt-2 text-lg font-semibold">
                           {{ formatCurrency(product.price) }}
+                        </div>
+                                                <div class="mt-2 text-lg font-semibold">
+               <p class="card--ps">{{ product.countProduct }} шт.</p>
                         </div>
                       </div>
                     </div>
