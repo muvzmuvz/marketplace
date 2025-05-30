@@ -260,22 +260,51 @@
 
         <!-- Модальное окно деталей заказа -->
         <Dialog v-model:open="isOrderDetailsOpen">
-          <DialogContent>
+          <DialogContent class="sm:max-w-2xl">
             <DialogHeader>
-              <DialogTitle>Детали заказа</DialogTitle>
+              <DialogTitle>Заказ #{{ selectedOrder?.id }}</DialogTitle>
+                          <DialogDescription>
+              Дата создания: {{ selectedOrder ? formatDate(selectedOrder.dateCreated) : '' }}
+            </DialogDescription>
             </DialogHeader>
 
             <div class="space-y-2">
               <p><strong>ID:</strong> {{ selectedOrder?.id }}</p>
               <p><strong>Пользователь:</strong> {{ selectedOrder?.userId }}</p>
               <p><strong>Статус:</strong> {{ getStatusText(selectedOrder?.status) }}</p>
-              <p><strong>Товары:</strong></p>
-              <ul class="list-disc pl-6">
-                <li v-for="item in selectedOrder?.products" :key="item.productId">
-                  {{ item.product.name }} ×{{ item.quantity }}
-                </li>
-              </ul>
-              <p><strong>Сумма:</strong> {{ formatCurrency(selectedOrder?.totalPrice) }}</p>
+
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Товар</TableHead>
+                    <TableHead>Цена</TableHead>
+                    <TableHead>Количество</TableHead>
+                    <TableHead class="text-right">Сумма</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  
+                  <TableRow v-for="item in selectedOrder?.products" :key="item.productId">
+                    <TableCell>
+                     
+                      <div class="flex items-center gap-3 ">
+                        <img v-if="item.product.images[0].path.length" :src="item.product.images[0].path"
+                          class="w-12 h-12 rounded object-cover" />
+                        <div>
+                          <div class="width elipse">{{ item.product.name }}</div>
+                          <div class="text-sm text-gray-500">{{ item.product.description }}</div>
+                        </div>
+                     
+                      </div>
+                    </TableCell>
+                    <TableCell>{{ formatCurrency(item.price) }}</TableCell>
+                    <TableCell>{{ item.quantity }}</TableCell>
+                    <TableCell class="text-right">
+                      {{ formatCurrency(item.price * item.quantity) }}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
 
               <div class="flex justify-end gap-2 mt-4">
                 <Button variant="outline" @click="isOrderDetailsOpen = false">Закрыть</Button>
@@ -383,7 +412,7 @@ const statusFilter = ref('all')
 const isLoading = ref(true)
 
 const isAdmin = computed(() => {
-  return userData.value?.role === 0
+  return userData.value?.role === 2
 })
 
 const fetchUserData = async () => {
@@ -398,7 +427,7 @@ const fetchUserData = async () => {
     userData.value = await response.json()
     
     // Перенаправление если не администратор
-    if (userData.value.role !== 0) {
+    if (userData.value.role !== 2) {
       router.push('/auth/admin-login')
       return
     }
