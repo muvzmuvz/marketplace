@@ -13,14 +13,34 @@
     <div v-else-if="product">
       <div class="gallery-info-grid">
         <!-- Основное изображение -->
-        <div class="main-image-wrapper">
-          <img
-            :src="getImageUrl(product.images[activeIndex]?.path)"
-            :alt="`Изображение товара ${activeIndex + 1}`"
-            class="main-image"
-            @error="handleImageError"
-          />
-        </div>
+<div class="main-image-wrapper cursor-zoom-in" @click="isModalOpen = true">
+  <img
+    :src="getImageUrl(product.images[activeIndex]?.path)"
+    :alt="`Изображение товара ${activeIndex + 1}`"
+    class="main-image"
+    @error="handleImageError"
+  />
+</div>
+
+<div
+  v-if="isModalOpen"
+  class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-500"
+  @click.self="isModalOpen = false"
+>
+  <div class="relative">
+    <img
+      :src="modalImage"
+      alt="Увеличенное изображение"
+      class="max-w-[90vw] max-h-[90vh] rounded-lg shadow-lg"
+    />
+    <button
+      class="absolute top-2 right-2 text-white text-3xl font-bold bg-black bg-opacity-50 rounded-full w-10 h-10 flex items-center justify-center hover:bg-opacity-80 transition"
+      @click.stop="isModalOpen = false"
+    >
+      ✕
+    </button>
+  </div>
+</div>
 
         <!-- Информация о товаре -->
         <div class="product-info">
@@ -150,6 +170,8 @@ const newComment = ref('')
 const productEvaluation = ref(5) // по умолчанию 5 звёзд
 const activeIndex = ref(0)
 const userId = ref(null)
+const isModalOpen = ref(false)
+const modalImage = computed(() => getImageUrl(product.value?.images?.[activeIndex.value]?.path))
 
 const isAdded = ref(false)
 
