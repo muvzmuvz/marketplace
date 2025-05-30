@@ -99,7 +99,7 @@ const viewAllOrders = () => {
                 <Card v-for="order in user.orders.slice(0, 2)" :key="order.id" class="p-4">
                     <p><strong>Заказ #{{ order.id }}</strong></p>
                     <p>Сумма: {{ order.totalPrice }} ₽</p>
-                    <p>Статус: {{ order.status === 0 ? 'Ожидает' : 'Завершен' }}</p>
+                    <p>Статус: {{ order.status === 0 ? 'В пути' : 'Завершен' }}</p>
                     
                     <!-- Список товаров с ссылками на страницы товара -->
                     <div class="mt-4">
@@ -107,7 +107,7 @@ const viewAllOrders = () => {
                         <ul>
                             <li v-for="product in order.products" :key="product.productId">
                                 <router-link :to="`/product/${product.productId}`">
-                                    <img :src="product.product.imagePath" alt="product.name" class="w-30 h-20 inline-block mr-2" />
+                                    <img :src="product.product.images[0].path" alt="product.name" class="w-30 h-20 inline-block mr-2" />
                                     {{ product.product.name }}
                                 </router-link>
                                 - {{ product.quantity }} шт.

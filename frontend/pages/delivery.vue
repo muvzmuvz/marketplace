@@ -50,7 +50,7 @@ onMounted(fetchOrders)
                 <Card v-for="order in orders" :key="order.id" class="p-4">
                     <p><strong>Заказ #{{ order.id }}</strong></p>
                     <p>Сумма: {{ order.totalPrice }} ₽</p>
-                    <p>Статус: {{ order.status === 0 ? 'Ожидает' : 'Завершен' }}</p>
+                    <p>Статус: {{ order.status === 0 ? 'В пути' : 'Завершен' }}</p>
                     <div class="mt-4">
                         <p><strong>Товары в заказе:</strong></p>
                         <ul>
