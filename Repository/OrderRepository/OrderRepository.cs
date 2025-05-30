@@ -85,15 +85,12 @@ public class OrderRepository : IOrderRepository
     {
         var order = await _context.Orders
             .Include(order => order.Products)
-            .ThenInclude(pr => pr.Product)
-            .ThenInclude(product => product.Images)
             .FirstOrDefaultAsync(ord => ord.Id == orderId);
         if(order == null)
         {
             throw new NotFoundExeption("Данный заказ не существует по этому ID");
         }
 
-        order.DateCreated = newOrder.DateCreated;
         order.Status = newOrder.Status;
         order.Products = newOrder.Products;
         order.TotalPrice = newOrder.TotalPrice;

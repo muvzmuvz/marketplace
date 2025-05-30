@@ -72,7 +72,7 @@ public class OrderController : ControllerBase
 
     [HttpPut]
     [Route("orders/{orderId}")]
-    [Authorize(Roles ="Admin")]
+    [Authorize(Roles = "Admin, Seller")]
     public async Task<IActionResult> UpdateStatusOrderAsync(int orderId, OrderStatus status)
     {
         await _orderService.OrderUpdateOfStatusAsync(status, orderId);
@@ -85,10 +85,7 @@ public class OrderController : ControllerBase
     [Authorize(Roles = "Seller, Admin")]
     public async Task<IActionResult> UpdateOrderAsync(OrderDto orderDto, int orderId)
     {
-        var userId = _jwtService.GetIdUser(HttpContext);
-        orderDto.UserId = userId;
-
-        await _orderService.UpdateOrderAsync(orderDto, orderId);
+        await _orderService.UpdateOrderAsync(orderDto, orderDto.UserId);
 
         return StatusCode(201);
     }
