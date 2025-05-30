@@ -27,10 +27,12 @@ const fetchProfile = async () => {
         })
 
         if (ordersResponse.ok) {
-            user.value.orders = await ordersResponse.json()
+            const ordersData = await ordersResponse.json()
+
+            // 📌 Сортируем заказы от новых к старым по id
+            user.value.orders = ordersData.sort((a, b) => b.id - a.id)
         } else {
-            throw new error('Ошибка при загрузке заказов')
-            
+            throw new Error('Ошибка при загрузке заказов')
         }
 
     } catch (error) {

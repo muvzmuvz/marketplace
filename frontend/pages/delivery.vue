@@ -6,24 +6,27 @@ import '@/assets/css/profile.css'
 const router = useRouter()
 const orders = ref([])
 const isLoading = ref(true)
-
 const fetchOrders = async () => {
-    try {
-        const response = await fetch('http://localhost:8080/order/orders', {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include'
-        })
+  try {
+    const response = await fetch('http://localhost:8080/order/orders', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include'
+    })
 
-        if (!response.ok) throw new Error('Ошибка при загрузке заказов')
+    if (!response.ok) throw new Error('Ошибка при загрузке заказов')
 
-        orders.value = await response.json()
-    } catch (error) {
-        console.error(error)
-        router.push('/auth/login') // В случае ошибки, перенаправляем на страницу авторизации
-    } finally {
-        isLoading.value = false
-    }
+    const data = await response.json()
+
+    // 📌 Сортируем от самого нового к старому по id
+    orders.value = data.sort((a, b) => b.id - a.id)
+
+  } catch (error) {
+    console.error(error)
+    router.push('/auth/login')
+  } finally {
+    isLoading.value = false
+  }
 }
 
 onMounted(fetchOrders)
