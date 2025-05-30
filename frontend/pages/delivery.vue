@@ -46,24 +46,48 @@ onMounted(fetchOrders)
                 У вас нет заказов
             </div>
 
-            <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card v-for="order in orders" :key="order.id" class="p-4">
-                    <p><strong>Заказ #{{ order.id }}</strong></p>
-                    <p>Сумма: {{ order.totalPrice }} ₽</p>
-                    <p>Статус: {{ order.status === 0 ? 'В пути' : 'Завершен' }}</p>
-                    <div class="mt-4">
-                        <p><strong>Товары в заказе:</strong></p>
-                        <ul>
-                            <li v-for="product in order.products" :key="product.productId">
-                                <router-link :to="`/product/${product.productId}`">
-                                <img :src="product.product.images[0].path" alt="product.name" class="w-30 h-20 inline-block mr-2" />
-                            </router-link>
-                                {{ product.product.name }} - {{ product.quantity }} шт.
-                            </li>
-                        </ul>
-                    </div>
-                </Card>
-            </div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+  <Card
+    v-for="order in orders"
+    :key="order.id"
+    class="p-4 rounded-2xl shadow-sm bg-white hover:shadow-md transition h-full"
+  >
+    <p class="text-base font-semibold mb-1">Заказ №{{ order.id }}</p>
+    <p class="text-sm text-gray-600 mb-2">
+      Сумма: <span class="font-medium">{{ order.totalPrice }} ₽</span>
+    </p>
+    <p class="text-sm mb-3">
+      Статус:
+      <span
+        :class="order.status === 0 ? 'text-yellow-500' : 'text-green-600'"
+        class="font-medium"
+      >
+        {{ order.status === 0 ? 'В пути' : 'Завершен' }}
+      </span>
+    </p>
+
+    <!-- Ограничение высоты для компактности -->
+    <div class="space-y-3 max-h-36 overflow-y-auto pr-1">
+      <div
+        v-for="product in order.products"
+        :key="product.productId"
+        class="flex items-center gap-3"
+      >
+        <router-link :to="`/product/${product.productId}`">
+          <img
+            :src="product.product.images[0].path"
+            alt="product.product.name"
+            class="w-16 h-16 object-cover rounded-md border"
+          />
+        </router-link>
+        <div class="text-sm">
+          <p class="font-medium truncate">{{ product.product.name }}</p>
+          <p class="text-gray-500">Кол-во: {{ product.quantity }} шт.</p>
+        </div>
+      </div>
+    </div>
+  </Card>
+</div>
         </Card>
     </div>
 </template>

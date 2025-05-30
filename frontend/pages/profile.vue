@@ -91,31 +91,48 @@ const viewAllOrders = () => {
 
         <!-- Заказы -->
         <div class="orders mt-6 ">
-            <h2 class="text-xl font-semibold ">Мои последние заказы</h2>
+            <h2 class="text-xl font-semibold padding">Мои последние заказы</h2>
 
             <div v-if="!user?.orders || user.orders.length === 0" class="text-gray-500">У вас пока нет заказов</div>
 
             <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card v-for="order in user.orders.slice(0, 2)" :key="order.id" class="p-4">
-                    <p><strong>Заказ #{{ order.id }}</strong></p>
-                    <p>Сумма: {{ order.totalPrice }} ₽</p>
-                    <p>Статус: {{ order.status === 0 ? 'В пути' : 'Завершен' }}</p>
-                    
-                    <!-- Список товаров с ссылками на страницы товара -->
-                    <div class="mt-4">
-                        <p><strong>Товары в заказе:</strong></p>
-                        <ul>
-                            <li v-for="product in order.products" :key="product.productId">
-                                <router-link :to="`/product/${product.productId}`">
-                                    <img :src="product.product.images[0].path" alt="product.name" class="w-30 h-20 inline-block mr-2" />
-                                    {{ product.product.name }}
-                                </router-link>
-                                - {{ product.quantity }} шт.
-                            </li>
-                        </ul>
-                    </div>
-                </Card>
-            </div>
+  <Card
+    v-for="order in user.orders.slice(0, 2)"
+    :key="order.id"
+    class="p-4 space-y-2 rounded-2xl shadow-md border border-gray-200"
+  >
+    <p class="font-semibold text-lg">Заказ #{{ order.id }}</p>
+    <p class="text-sm">Сумма: <span class="font-medium">{{ order.totalPrice }} ₽</span></p>
+    <p class="text-sm">
+      Статус:
+      <span :class="order.status === 0 ? 'text-orange-500' : 'text-green-600'">
+        {{ order.status === 0 ? 'В пути' : 'Завершен' }}
+      </span>
+    </p>
+
+    <!-- Товары -->
+    <div class="mt-2">
+      <p class="font-medium mb-1">Товары:</p>
+      <div class="flex gap-2 overflow-x-auto max-w-full pb-2">
+        <div
+          v-for="product in order.products"
+          :key="product.productId"
+          class="flex-shrink-0 w-28"
+        >
+          <router-link :to="`/product/${product.productId}`" class="block text-center">
+            <img
+              :src="product.product.images[0].path"
+              alt="product.name"
+              class="w-24 h-24 object-cover mx-auto rounded-lg"
+            />
+            <p class="text-xs mt-1 truncate">{{ product.product.name }}</p>
+            <p class="text-xs text-gray-500">Кол-во: {{ product.quantity }} шт.</p>
+          </router-link>
+        </div>
+      </div>
+    </div>
+  </Card>
+</div>
 
             <!-- Кнопка для просмотра всех заказов -->
             <div v-if="user?.orders.length > 2" class="text-center mt-4">

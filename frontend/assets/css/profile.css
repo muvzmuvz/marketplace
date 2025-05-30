@@ -9,7 +9,9 @@
 
 }
 
-
+.padding{
+    margin-bottom:10px;
+}
 .buttons{
     display: flex;
     justify-content:flex-end;
