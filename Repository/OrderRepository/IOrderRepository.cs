@@ -11,5 +11,6 @@ public interface IOrderRepository
     Task UpdateOrderAsync(Order newOrder, int orderId);
     Task<List<Order>> GetOrdersByDate(DateTime date);
     Task UpdateOfStatusAsync(OrderStatus orderStatus, int orderid);
+    Task<List<Order>> GetOrdersOfSeller(int sellerId);
 }
 

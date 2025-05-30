@@ -128,4 +128,11 @@ public class OrderService : IOrderService
         var order = _mapper.Map<Order>(newOrder);
         await _orderRepository.UpdateOrderAsync(order, orderId);
     }
+
+    public async Task<List<OrderDto>> GetOrdersOfSeller(int sellerId)
+    {
+        var orders = await _orderRepository.GetOrdersOfSeller(sellerId);
+
+        return _mapper.Map<List<OrderDto>>(orders);
+    }
 }

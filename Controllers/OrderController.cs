@@ -109,4 +109,16 @@ public class OrderController : ControllerBase
 
         return Ok(orders);
     }
+
+    [HttpGet]
+    [Route("OrdersOfSeller")]
+    [Authorize(Roles = "Seller, Admin")]
+    public async Task<IActionResult> GetOrdersOfSeller()
+    {
+        var sellerId = _jwtService.GetIdUser(HttpContext);
+
+        var orders = await _orderService.GetOrdersOfSeller(sellerId);
+
+        return Ok(orders);
+    }
 }
