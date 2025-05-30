@@ -1,669 +1,654 @@
-<script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-
-import { RefreshCwIcon, Loader2Icon, EyeIcon, Trash2Icon } from 'lucide-vue-next'
-
-interface ProductImage {
-  path: string
-}
-
-interface Product {
-  id: number
-  name: string
-  description: string
-  price: number
-  characteristic: string
-  countProduct: number
-  category: number
-  images: ProductImage[]
-}
-
-interface OrderProduct {
-  productId: number
-  product: Product
-  quantity: number
-  price: number
-}
-
-interface Order {
-  id: number
-  userId: number
-  totalPrice: number
-  status: number
-  dateCreated: string
-  products: OrderProduct[]
-}
-
-const form = reactive({
-  name: '',
-  description: '',
-  characteristic: '',
-  price: 0,
-  countProduct: 1,
-  category: 1,
-  images: [] as ProductImage[]
-})
-
-const router = useRouter()
-const user = ref<User | null>(null)
-const isLoading = ref(true)
-
-const isSeller = computed(() => user.value?.role === 2)
-
-const fetchProfile = async () => {
-  try {
-    const response = await fetch('http://localhost:8080/user/user', {
-      method: 'GET',
-      credentials: 'include'
-    })
-
-    if (!response.ok) throw new Error('Ошибка авторизации')
-    
-    const userData = await response.json()
-    user.value = userData
-
-    // Проверка роли
-    if (userData.role !== 2) {
-      router.push('/')
-      return
-    }
-
-  } catch (error) {
-    console.error('Ошибка:', error)
-    router.push('/auth/login')
-  } finally {
-    isLoading.value = false
-  }
-}
-
-onMounted(() => {
-  fetchProfile()
-})
-
-const products = ref<Product[]>([])
-const loading = ref(false)
-const orders = ref<Order[]>([])
-const ordersLoading = ref(false)
-const ordersError = ref('')
-const searchQuery = ref('')
-const statusFilter = ref('all')
-const selectedOrder = ref<Order | null>(null)
-const isOrderDetailsOpen = ref(false)
-const editingProduct = ref<Product | null>(null)
-
-const editForm = reactive({
-  name: '',
-  description: '',
-  price: 0
-})
-
-const isEditModalOpen = computed({
-  get: () => !!editingProduct.value,
-  set: (value) => {
-    if (!value) editingProduct.value = null
-  }
-})
-
-onMounted(() => {
-  loadProducts()
-  loadOrders()
-})
-
-
-
-
-
-
-
-async function loadProducts() {
-  loading.value = true
-  try {
-    const response = await fetch('http://localhost:8080/product/get_manager_product', {
-      credentials: 'include'
-    })
-    products.value = await response.json()
-  } catch (error) {
-    console.error('Ошибка загрузки товаров:', error)
-  } finally {
-    loading.value = false
-  }
-}
-
-async function loadOrders() {
-  ordersLoading.value = true
-  try {
-    const response = await fetch('http://localhost:8080/order/orders', {
-      credentials: 'include'
-    })
-    orders.value = await response.json()
-  } catch (error) {
-    ordersError.value = 'Ошибка загрузки заказов'
-    console.error(error)
-  } finally {
-    ordersLoading.value = false
-  }
-}
-
-async function uploadImages(event: Event) {
-  const input = event.target as HTMLInputElement
-  const files = Array.from(input.files || [])
-
-  if (!files.length) return
-
-  try {
-    const uploadPromises = files.map(async (file) => {
-      const formData = new FormData()
-      formData.append('file', file)
-
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData
-      })
-
-      if (!response.ok) throw new Error('Ошибка загрузки изображения')
-
-      const data = await response.json()
-      return { path: data.imagePath }  // приводим к ProductImage
-    })
-
-    const newImages = await Promise.all(uploadPromises)
-    form.images.push(...newImages)
-  } catch (error) {
-    console.error('Ошибка загрузки изображений:', error)
-    alert('❌ Не удалось загрузить некоторые изображения')
-  }
-}
-
-async function submitProduct() {
-  if (!validateForm()) return
-
-  try {
-    const requestBody = {
-      countProduct: form.countProduct,
-      category: form.category,
-      price: form.price,
-      name: form.name,
-      description: form.description,
-      characteristic: form.characteristic,
-      imagePath : '',
-      images: form.images.map(img => ({ path: img.path }))  // только массив images
-    }
-
-    const response = await fetch('http://localhost:8080/product/create', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody),
-      credentials: 'include'
-    })
-
-    if (!response.ok) throw new Error('Ошибка при создании товара')
-
-    resetForm()
-    await loadProducts()
-    alert('✅ Товар успешно создан!')
-  } catch (error) {
-    console.error(error)
-    alert('❌ Ошибка при создании товара')
-  }
-}
-
-
-function validateForm() {
-  if (!form.name.trim()) {
-    alert('Введите название товара')
-    return false
-  }
-  if (form.price <= 0) {
-    alert('Цена должна быть больше нуля')
-    return false
-  }
-  if (form.images.length === 0) {
-    alert('Добавьте хотя бы одно изображение')
-    return false
-  }
-  return true
-}
-
-function resetForm() {
-  form.name = ''
-  form.description = ''
-  form.characteristic = ''
-  form.price = 0
-  form.countProduct = 1
-  form.category = 1
-  form.images = []
-}
-
-
-
-function removeImage(index: number) {
-  form.images.splice(index, 1)
-}
-
-
-
-async function deleteProduct(id: number) {
-  if (confirm('Удалить товар?')) {
-    await fetch(`http://localhost:8080/product/delete/${id}`, {
-      method: 'DELETE',
-      credentials: 'include'
-    })
-    await loadProducts()
-  }
-}
-
-function startEdit(product: Product) {
-  editingProduct.value = product
-  editForm.name = product.name
-  editForm.description = product.description
-  editForm.price = product.price
-}
-
-async function updateProduct() {
-  if (!editingProduct.value) return
-
-  try {
-    const response = await fetch(`http://localhost:8080/product/update/${editingProduct.value.id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(editForm),
-      credentials: 'include'
-    })
-
-    if (!response.ok) throw new Error('Ошибка обновления')
-
-    await loadProducts()
-    editingProduct.value = null
-  } catch (error) {
-    console.error(error)
-    alert('❌ Ошибка при обновлении товара')
-  }
-}
-
-const filteredOrders = computed(() => {
-  return orders.value.filter(order => {
-    const matchesSearch = order.id.toString().includes(searchQuery.value)
-    const matchesStatus = statusFilter.value === 'all' || order.status.toString() === statusFilter.value
-    return matchesSearch && matchesStatus
-  })
-})
-
-async function updateOrderStatus(orderId: number, status: string) {
-  try {
-    const response = await fetch(`http://localhost:8080/order/order_update/${orderId}?status=${status}`, {
-      method: 'PUT',
-      credentials: 'include'
-    })
-
-    if (!response.ok) throw new Error('Ошибка обновления статуса')
-
-    await loadOrders()
-  } catch (error) {
-    console.error(error)
-    alert('❌ Ошибка обновления статуса')
-  }
-}
-
-function openOrderDetails(order: Order) {
-  selectedOrder.value = order
-  isOrderDetailsOpen.value = true
-}
-
-async function confirmDeleteOrder(id: number) {
-  if (confirm('Удалить заказ?')) {
-    try {
-      await fetch(`http://localhost:8080/order/orders/${id}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      })
-      await loadOrders()
-    } catch (error) {
-      console.error(error)
-      alert('❌ Ошибка удаления заказа')
-    }
-  }
-}
-
-function formatCurrency(amount: number) {
-  return new Intl.NumberFormat('ru-RU', {
-    style: 'currency',
-    currency: 'RUB'
-  }).format(amount)
-}
-
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleDateString('ru-RU', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
-
-function getStatusText(status: number) {
-  return {
-    0: 'Ожидает обработки',
-    1: 'В обработке',
-  }[status] || 'Неизвестный статус'
-}
-
-function getStatusBadgeVariant(status: number) {
-  return {
-    0: 'secondary',
-    1: 'default',
-  }[status] || 'default'
-}
-</script>
-
-
 <template>
-    <NavMenu />
+  <NavMenu />
 
-    <main class="p-4 md:p-8 dash" v-if="isSeller">
-      <Tabs default-value="crm" class="w-full">
-        <TabsList class="grid w-full grid-cols-3">
-          <TabsTrigger value="crm">CRM</TabsTrigger>
-          <TabsTrigger value="create">Создать товар</TabsTrigger>
-          <TabsTrigger value="manage">Управление товарами</TabsTrigger>
-        </TabsList>
+  <main class="p-4 md:p-8 dash" v-if="isAdmin">
+    <Tabs default-value="users" class="w-full">
+      <TabsList class="grid w-full grid-cols-4">
+        <TabsTrigger value="users">Пользователи</TabsTrigger>
+        <TabsTrigger value="products">Товары</TabsTrigger>
+        <TabsTrigger value="orders">Заказы</TabsTrigger>
+        <TabsTrigger value="reviews">Отзывы</TabsTrigger>
+      </TabsList>
 
-        <!-- Вкладка CRM -->
-        <TabsContent value="crm">
-          <Card>
-            <CardContent class="p-6 space-y-6">
-              <div class="flex justify-between items-center">
-                <h2 class="text-2xl font-semibold">Управление заказами</h2>
-                <Button @click="loadOrders" variant="outline">
-                  <RefreshCwIcon class="w-4 h-4 mr-2" :class="{ 'animate-spin': ordersLoading }" />
-                  Обновить
-                </Button>
-              </div>
-
-              <div v-if="ordersLoading" class="flex justify-center py-8">
-                <Loader2Icon class="w-8 h-8 animate-spin" />
-              </div>
-
-              <div v-else-if="ordersError" class="text-red-500 text-center py-4">
-                {{ ordersError }}
-              </div>
-
-              <div v-else class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Input v-model="searchQuery" placeholder="Поиск по ID заказа" />
-                  <Select v-model="statusFilter">
-                    <SelectTrigger>
-                      <SelectValue placeholder="Все статусы" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">Все статусы</SelectItem>
-                      <SelectItem value="0">Ожидает обработки</SelectItem>
-                      <SelectItem value="1">В обработке</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div class="border rounded-lg overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>ID</TableHead>
-                        <TableHead>Пользователь</TableHead>
-                        <TableHead>Товары</TableHead>
-                        <TableHead>Сумма</TableHead>
-                        <TableHead>Статус</TableHead>
-                        <TableHead class="text-right">Действия</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      <TableRow v-for="order in filteredOrders" :key="order.id">
-                        <TableCell>#{{ order.id }}</TableCell>
-                        <TableCell>{{ order.userId }}</TableCell>
-                        <TableCell>
-                          <div v-for="item in order.products" :key="item.productId" class="text-sm">
-                            {{ item.product.name }} ×{{ item.quantity }}
-                          </div>
-                        </TableCell>
-                        <TableCell>{{ formatCurrency(order.totalPrice) }}</TableCell>
-                        <TableCell>
-                          <Select :model-value="order.status.toString()"
-                            @update:model-value="updateOrderStatus(order.id, $event)">
-                            <SelectTrigger class="w-[160px]">
-                              <SelectValue :placeholder="getStatusText(order.status)" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="0">Ожидает обработки</SelectItem>
-                              <SelectItem value="1">В обработке</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </TableCell>
-                        <TableCell class="text-right space-x-2">
-                          <Button variant="ghost" size="sm" @click="openOrderDetails(order)">
-                            <EyeIcon class="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" class="text-red-500" @click="confirmDeleteOrder(order.id)">
-                            <Trash2Icon class="w-4 h-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <!-- Вкладка создания товара -->
-        <TabsContent value="create">
-          <Card>
-            <CardContent class="p-6 space-y-6">
-              <h2 class="text-2xl font-semibold">Создать новый товар</h2>
-              <form @submit.prevent="submitProduct" class="space-y-6">
-                <div class="grid gap-4 md:grid-cols-2">
-                  <div class="space-y-2">
-                    <Label>Название товара</Label>
-                    <Input v-model="form.name" placeholder="Название" required />
-                  </div>
-
-                  <div class="space-y-2">
-                    <Label>Цена (₽)</Label>
-                    <Input type="number" v-model.number="form.price" required />
-                  </div>
-
-                  <div class="space-y-2">
-                    <Label>Описание</Label>
-                    <Textarea v-model="form.description" placeholder="Описание товара" />
-                  </div>
-
-                  <div class="space-y-2">
-                    <Label>Характеристики</Label>
-                    <Textarea v-model="form.characteristic" placeholder="Характеристики" />
-                  </div>
-
-                  <div class="space-y-2">
-                    <Label>Категория (ID)</Label>
-                    <Input type="number" v-model.number="form.category" required />
-                  </div>
-
-                  <div class="space-y-2">
-                    <Label>Количество</Label>
-                    <Input type="number" v-model.number="form.countProduct" required />
-                  </div>
-                </div>
-
-                <div class="space-y-4">
-                  <Label>Изображения товара</Label>
-                  <input type="file" accept="image/*" multiple @change="uploadImages"
-                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-white hover:file:bg-primary/90" />
-                  <div class="flex flex-wrap gap-2 mt-2">
-                    <div v-for="(image, index) in form.images" :key="index" class="relative group">
-                      <img :src="image.path" class="w-32 h-32 object-cover rounded-lg border" />
-                      <Button @click.prevent="removeImage(index)" variant="destructive" size="sm"
-                        class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Trash2Icon class="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-                <Button type="submit" class="w-full md:w-auto">Создать товар</Button>
-              </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <!-- Вкладка управления товарами -->
-        <TabsContent value="manage">
-          <Card>
-            <CardContent class="p-6">
-              <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-semibold">Список товаров</h2>
-                <Button @click="loadProducts" variant="outline">
-                  <RefreshCwIcon class="w-4 h-4 mr-2" :class="{ 'animate-spin': loading }" />
-                  Обновить
-                </Button>
-              </div>
-
-              <div v-if="loading" class="flex justify-center py-8">
-                <Loader2Icon class="w-8 h-8 animate-spin" />
-              </div>
-
-              <div v-else-if="products.length === 0" class="text-center py-4 text-gray-500">
-                Нет доступных товаров
-              </div>
-
-              <div v-else class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <Card v-for="product in products" :key="product.id">
-                  <CardContent class="p-4 space-y-4">
-                    <div class="flex items-start gap-4">
-                      <img v-if="product.images.length" :src="product.images[0].path" :alt="product.name"
-                        class="w-24 h-24 rounded-lg object-cover" />
-                      <div class="flex-1">
-                        <h3 class="font-semibold">{{ product.name }}</h3>
-                        <p class="text-sm text-gray-500">{{ product.description }}</p>
-                        <div class="mt-2 text-lg font-semibold">
-                          {{ formatCurrency(product.price) }}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="flex gap-2">
-                      <Button variant="outline" class="flex-1" @click="startEdit(product)">
-                        Редактировать
-                      </Button>
-                      <Button variant="destructive" class="flex-1" @click="deleteProduct(product.id)">
-                        Удалить
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      <!-- Модальное окно редактирования товара -->
-      <Dialog v-model:open="isEditModalOpen">
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Редактирование товара</DialogTitle>
-          </DialogHeader>
-
-          <div class="space-y-4">
-            <div class="space-y-2">
-              <Label>Название</Label>
-              <Input v-model="editForm.name" />
+      <!-- Вкладка Пользователи -->
+      <TabsContent value="users">
+        <Card>
+          <CardContent class="p-6 space-y-6">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-2xl font-semibold">Пользователи</h2>
+              <Button @click="loadUsers" variant="outline">
+                <RefreshCwIcon class="w-4 h-4 mr-2" :class="{ 'animate-spin': usersLoading }" />
+                Обновить
+              </Button>
             </div>
 
-            <div class="space-y-2">
-              <Label>Описание</Label>
-              <Textarea v-model="editForm.description" />
+            <div v-if="usersLoading" class="flex justify-center py-8">
+              <Loader2Icon class="w-8 h-8 animate-spin" />
             </div>
 
-            <div class="space-y-2">
-              <Label>Цена</Label>
-              <Input type="number" v-model.number="editForm.price" />
+            <div v-else-if="usersError" class="text-red-500 text-center py-4">
+              {{ usersError }}
             </div>
 
-            <div class="flex justify-end gap-2">
-              <Button variant="outline" @click="cancelEdit">Отмена</Button>
-              <Button @click="updateProduct">Сохранить</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <!-- Модальное окно деталей заказа -->
-      <Dialog v-model:open="isOrderDetailsOpen">
-        <DialogContent class="sm:max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Заказ #{{ selectedOrder?.id }}</DialogTitle>
-            <DialogDescription>
-              Дата создания: {{ selectedOrder ? formatDate(selectedOrder.dateCreated) : '' }}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div class="grid gap-4 py-4">
-            <div class="grid grid-cols-2 gap-4">
-              <div class="space-y-2">
-                <Label>Статус заказа</Label>
-                <Badge :variant="getStatusBadgeVariant(selectedOrder?.status || 0)" class="text-sm">
-                  {{ getStatusText(selectedOrder?.status || 0) }}
-                </Badge>
-              </div>
-
-              <div class="space-y-2">
-                <Label>Общая сумма</Label>
-                <div class="text-xl font-semibold">
-                  {{ formatCurrency(selectedOrder?.totalPrice || 0) }}
-                </div>
-              </div>
-            </div>
-
-            <div class="border rounded-lg overflow-hidden">
+            <div v-else>
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Товар</TableHead>
-                    <TableHead>Цена</TableHead>
-                    <TableHead>Количество</TableHead>
-                    <TableHead class="text-right">Сумма</TableHead>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Имя</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Роль</TableHead>
+                    <TableHead class="text-right">Действия</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow v-for="item in selectedOrder?.products" :key="item.productId">
-                    <TableCell>
-                      <div class="flex items-center gap-3">
-                        <img v-if="item.product.images[0].path.length" :src="item.product.images[0].path"
-                          class="w-12 h-12 rounded object-cover" />
-                        <div>
-                          <div>{{ item.product.name }}</div>
-                          <div class="text-sm text-gray-500">{{ item.product.description }}</div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{{ formatCurrency(item.price) }}</TableCell>
-                    <TableCell>{{ item.quantity }}</TableCell>
-                    <TableCell class="text-right">
-                      {{ formatCurrency(item.price * item.quantity) }}
+                  <TableRow v-for="user in users" :key="user.id">
+                    <TableCell>{{ user.id }}</TableCell>
+                    <TableCell>{{ user.name || '—' }}</TableCell>
+                    <TableCell>{{ user.email }}</TableCell>
+                    <TableCell>{{ user.role || '—' }}</TableCell>
+                    <TableCell class="text-right space-x-2">
+                      <Button variant="ghost" size="sm" @click="viewUserDetails(user)">
+                        <EyeIcon class="w-4 h-4" />
+                      </Button>
+                      <Button variant="destructive" size="sm" @click="confirmDeleteUser(user.id)">
+                        <Trash2Icon class="w-4 h-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </main>
+          </CardContent>
+        </Card>
+
+        <!-- Модальное окно деталей пользователя -->
+        <Dialog v-model:open="isUserDetailsOpen">
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Детали пользователя</DialogTitle>
+            </DialogHeader>
+            <div class="space-y-4">
+              <p><strong>ID:</strong> {{ selectedUser?.id }}</p>
+              <p><strong>Имя:</strong> {{ selectedUser?.name }}</p>
+              <p><strong>Email:</strong> {{ selectedUser?.email }}</p>
+              <p><strong>Роль:</strong> {{ selectedUser?.role }}</p>
+              <p><strong>Дата регистрации:</strong> {{ formatDate(selectedUser?.createdAt) }}</p>
+              <div class="flex justify-end mt-4">
+                <Button variant="outline" @click="isUserDetailsOpen = false">Закрыть</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </TabsContent>
+
+      <!-- Вкладка Товары -->
+      <TabsContent value="products">
+        <Card>
+          <CardContent class="p-6 space-y-6">
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-semibold">Управление товарами</h2>
+              <Button @click="loadProducts" variant="outline">
+                <RefreshCwIcon class="w-4 h-4 mr-2" :class="{ 'animate-spin': productsLoading }" />
+                Обновить
+              </Button>
+            </div>
+
+            <div v-if="productsLoading" class="flex justify-center py-8">
+              <Loader2Icon class="w-8 h-8 animate-spin" />
+            </div>
+
+            <div v-else-if="products.length === 0" class="text-center py-4 text-gray-500">
+              Нет доступных товаров
+            </div>
+
+            <div v-else class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <Card v-for="product in products" :key="product.id">
+                <CardContent class="p-4 space-y-4">
+                  <div class="flex items-start gap-4">
+                    <router-link :to="`/product/${product.id}`">
+                      <img v-if="product.images.length" :src="product.images[0].path" :alt="product.name"
+                        class="w-24 h-24 rounded-lg object-cover" />
+                    </router-link>
+                    <div class="flex-1 width">
+                      <h3 class="font-semibold elipse">{{ product.name }}</h3>
+                      <p class="text-sm text-gray-500 elipse">{{ product.description }}</p>
+                      <div class="mt-2 text-lg font-semibold">{{ formatCurrency(product.price) }}</div>
+                      <div class="mt-2 text-lg font-semibold">
+                        <p class="card--ps">{{ product.countProduct }} шт.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex gap-2">
+                    <Button variant="outline" class="flex-1" @click="startEdit(product)">Редактировать</Button>
+                    <Button variant="destructive" class="flex-1" @click="confirmDeleteProduct(product.id)">Удалить</Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </CardContent>
+        </Card>
+
+        <!-- Модальное окно редактирования товара -->
+        <Dialog v-model:open="isEditModalOpen">
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Редактирование товара</DialogTitle>
+            </DialogHeader>
+
+            <div class="space-y-4">
+              <div class="space-y-2">
+                <Label>Название</Label>
+                <Input v-model="editForm.name" />
+              </div>
+
+              <div class="space-y-2">
+                <Label>Описание</Label>
+                <Textarea v-model="editForm.description" />
+              </div>
+
+              <div class="space-y-2">
+                <Label>Характеристики</Label>
+                <Textarea v-model="editForm.characteristic" />
+              </div>
+
+              <div class="space-y-2">
+                <Label>Количество</Label>
+                <Input type="number" v-model.number="editForm.countProduct" />
+              </div>
+
+              <div class="space-y-2">
+                <Label>Цена</Label>
+                <Input type="number" v-model.number="editForm.price" />
+              </div>
+
+              <div class="flex justify-end gap-2">
+                <Button variant="outline" @click="cancelEdit">Отмена</Button>
+                <Button @click="updateProduct">Сохранить</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </TabsContent>
+
+      <!-- Вкладка Заказы -->
+        <TabsContent value="orders">
+        <Card>
+          <CardContent class="p-6 space-y-6">
+            <div class="flex justify-between items-center">
+              <h2 class="text-2xl font-semibold">Управление заказами</h2>
+              <Button @click="loadOrders" variant="outline">
+                <RefreshCwIcon class="w-4 h-4 mr-2" :class="{ 'animate-spin': ordersLoading }" />
+                Обновить
+              </Button>
+            </div>
+
+            <div v-if="ordersLoading" class="flex justify-center py-8">
+              <Loader2Icon class="w-8 h-8 animate-spin" />
+            </div>
+
+            <div v-else-if="ordersError" class="text-red-500 text-center py-4">
+              {{ ordersError }}
+            </div>
+
+            <div v-else class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Input v-model="searchQuery" placeholder="Поиск по ID заказа" />
+                <Select v-model="statusFilter">
+                  <SelectTrigger>
+                    <SelectValue placeholder="Все статусы" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Все статусы</SelectItem>
+                    <SelectItem value="0">Ожидает обработки</SelectItem>
+                    <SelectItem value="1">В обработке</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div class="border rounded-lg overflow-hidden">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>ID</TableHead>
+                      <TableHead>Пользователь</TableHead>
+                      <TableHead>Товары</TableHead>
+                      <TableHead>Сумма</TableHead>
+                      <TableHead>Статус</TableHead>
+                      <TableHead class="text-right">Действия</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow v-for="order in filteredOrders" :key="order.id">
+                      <TableCell>#{{ order.id }}</TableCell>
+                      <TableCell>{{ order.userId }}</TableCell>
+                      <TableCell>
+                        <div v-for="item in order.products" :key="item.productId" class="text-sm">
+                          {{ item.product.name }} ×{{ item.quantity }}
+                        </div>
+                      </TableCell>
+                      <TableCell>{{ formatCurrency(order.totalPrice) }}</TableCell>
+                      <TableCell>
+                        <Select :model-value="order.status.toString()"
+                          @update:model-value="updateOrderStatus(order.id, $event)">
+                          <SelectTrigger class="w-[160px]">
+                            <SelectValue :placeholder="getStatusText(order.status)" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="0">Ожидает обработки</SelectItem>
+                            <SelectItem value="1">В обработке</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell class="text-right space-x-2">
+                        <Button variant="ghost" size="sm" @click="openOrderDetails(order)">
+                          <EyeIcon class="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" class="text-red-500" @click="confirmDeleteOrder(order.id)">
+                          <Trash2Icon class="w-4 h-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
 
+        <!-- Модальное окно деталей заказа -->
+        <Dialog v-model:open="isOrderDetailsOpen">
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Детали заказа</DialogTitle>
+            </DialogHeader>
 
-  
+            <div class="space-y-2">
+              <p><strong>ID:</strong> {{ selectedOrder?.id }}</p>
+              <p><strong>Пользователь:</strong> {{ selectedOrder?.userId }}</p>
+              <p><strong>Статус:</strong> {{ getStatusText(selectedOrder?.status) }}</p>
+              <p><strong>Товары:</strong></p>
+              <ul class="list-disc pl-6">
+                <li v-for="item in selectedOrder?.products" :key="item.productId">
+                  {{ item.product.name }} ×{{ item.quantity }}
+                </li>
+              </ul>
+              <p><strong>Сумма:</strong> {{ formatCurrency(selectedOrder?.totalPrice) }}</p>
+
+              <div class="flex justify-end gap-2 mt-4">
+                <Button variant="outline" @click="isOrderDetailsOpen = false">Закрыть</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </TabsContent>
+
+      <!-- Вкладка Отзывы -->
+      <TabsContent value="reviews">
+        <Card>
+          <CardContent class="p-6 space-y-6">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-2xl font-semibold">Отзывы</h2>
+              <Button @click="loadReviews" variant="outline">
+                <RefreshCwIcon class="w-4 h-4 mr-2" :class="{ 'animate-spin': reviewsLoading }" />
+                Обновить
+              </Button>
+            </div>
+
+            <div v-if="reviewsLoading" class="flex justify-center py-8">
+              <Loader2Icon class="w-8 h-8 animate-spin" />
+            </div>
+
+            <div v-else-if="reviewsError" class="text-red-500 text-center py-4">
+              {{ reviewsError }}
+            </div>
+
+            <div v-else-if="reviews.length === 0" class="text-center py-4 text-gray-500">
+              Нет отзывов
+            </div>
+
+            <div v-else class="space-y-4">
+              <Card v-for="review in reviews" :key="review.id">
+                <CardContent class="p-4 space-y-2">
+                  <div class="flex justify-between items-center">
+                    <h3 class="font-semibold">{{ review.title || 'Отзыв' }}</h3>
+                    <div class="flex gap-2">
+                      <Button variant="ghost" size="sm" @click="editReview(review)">
+                        <Edit2Icon class="w-4 h-4" />
+                      </Button>
+                      <Button variant="destructive" size="sm" @click="confirmDeleteReview(review.id)">
+                        <Trash2Icon class="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  <p>{{ review.comment }}</p>
+                  <p class="text-sm text-gray-500">Пользователь: {{ review.userId }}</p>
+                  <p class="text-sm text-gray-500">Товар: {{ review.productId }}</p>
+                </CardContent>
+              </Card>
+            </div>
+          </CardContent>
+        </Card>
+      </TabsContent>
+    </Tabs>
+  </main>
 </template>
 
+<script setup>
+import { ref, reactive, onMounted, computed } from 'vue'
+import { 
+  RefreshCwIcon, 
+  Loader2Icon, 
+  EyeIcon, 
+  Trash2Icon,
+  Edit2Icon
+} from 'lucide-vue-next'
+
+const isAdmin = ref(true)
+
+// Пользователи
+const users = ref([])
+const usersLoading = ref(false)
+const usersError = ref(null)
+const selectedUser = ref(null)
+const isUserDetailsOpen = ref(false)
+
+// Товары
+const products = ref([])
+const productsLoading = ref(false)
+const isEditModalOpen = ref(false)
+const editForm = reactive({
+  id: null,
+  name: '',
+  description: '',
+  characteristic: '',
+  countProduct: 0,
+  price: 0,
+})
+const productsError = ref(null)
+
+// Заказы
+const orders = ref([])
+const ordersLoading = ref(false)
+const ordersError = ref(null)
+const selectedOrder = ref(null)
+const isOrderDetailsOpen = ref(false)
+const searchQuery = ref('')
+const statusFilter = ref('all')
+
+// Отзывы
+const reviews = ref([])
+const reviewsLoading = ref(false)
+const reviewsError = ref(null)
+
+// Фильтрация заказов
+const filteredOrders = computed(() => {
+  let result = orders.value
+  
+  // Фильтр по ID заказа
+  if (searchQuery.value) {
+    result = result.filter(order => 
+      String(order.id).includes(searchQuery.value))
+  }
+  
+  // Фильтр по статусу
+  if (statusFilter.value !== 'all') {
+    result = result.filter(order => 
+      String(order.status) === statusFilter.value
+    )
+  }
+  
+  return result
+})
+
+// Форматирование даты
+function formatDate(dateStr) {
+  if (!dateStr) return '—'
+  const date = new Date(dateStr)
+  return date.toLocaleDateString() + ' ' + date.toLocaleTimeString()
+}
+
+// Форматирование валюты
+function formatCurrency(value) {
+  if (typeof value !== 'number') return '—'
+  return new Intl.NumberFormat('ru-RU', { 
+    style: 'currency', 
+    currency: 'RUB' 
+  }).format(value)
+}
+
+// Статусы заказов
+const statusMap = {
+  0: 'Ожидает обработки',
+  1: 'В обработке',
+  2: 'Отправлен',
+  3: 'Завершён',
+}
+
+function getStatusText(status) {
+  return statusMap[status] || 'Неизвестно'
+}
+
+// ======= Пользователи =======
+async function loadUsers() {
+  usersLoading.value = true
+  usersError.value = null
+  try {
+    const res = await fetch('http://localhost:8080/user/users', {
+      method: 'GET',
+      credentials: 'include',
+      headers: { 'Accept': '*/*' }
+    })
+    if (!res.ok) throw new Error('Ошибка загрузки пользователей')
+    users.value = await res.json()
+  } catch (e) {
+    usersError.value = e.message || 'Ошибка загрузки пользователей'
+  } finally {
+    usersLoading.value = false
+  }
+}
+
+function viewUserDetails(user) {
+  selectedUser.value = user
+  isUserDetailsOpen.value = true
+}
+
+async function confirmDeleteUser(id) {
+  if (!confirm('Удалить пользователя?')) return
+  try {
+    const res = await fetch(`http://localhost:8080/user/del/${id}`, {
+      credentials: 'include',
+      method: 'DELETE',
+    })
+    if (!res.ok) throw new Error('Ошибка удаления')
+    alert('Пользователь удалён')
+    await loadUsers()
+  } catch (e) {
+    alert(e.message || 'Ошибка удаления пользователя')
+  }
+}
+
+// ======= Товары =======
+async function loadProducts() {
+  productsLoading.value = true
+  productsError.value = null
+  try {
+    const res = await fetch('http://localhost:8080/product/top_product')
+    if (!res.ok) throw new Error('Ошибка сети')
+    products.value = await res.json()
+  } catch (e) {
+    productsError.value = e.message || 'Ошибка загрузки товаров'
+  } finally {
+    productsLoading.value = false
+  }
+}
+
+function startEdit(product) {
+  editForm.id = product.id
+  editForm.name = product.name
+  editForm.description = product.description
+  editForm.characteristic = product.characteristic
+  editForm.countProduct = product.countProduct
+  editForm.price = product.price
+  isEditModalOpen.value = true
+}
+
+function cancelEdit() {
+  isEditModalOpen.value = false
+}
+
+async function updateProduct() {
+  try {
+    const res = await fetch(`http://localhost:8080/product/update/${editForm.id}`, {
+      credentials: 'include',
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: editForm.name,
+        description: editForm.description,
+        characteristic: editForm.characteristic,
+        countProduct: editForm.countProduct,
+        price: editForm.price,
+      }),
+    })
+    if (!res.ok) throw new Error('Ошибка обновления')
+    alert('Товар обновлён')
+    isEditModalOpen.value = false
+    loadProducts()
+  } catch (e) {
+    alert(e.message || 'Ошибка обновления товара')
+  }
+}
+
+async function confirmDeleteProduct(id) {
+  if (!confirm('Удалить товар?')) return
+  try {
+    const res = await fetch(`http://localhost:8080/product/delete/${id}`, {
+      credentials: 'include',
+      method: 'DELETE',
+    })
+    if (!res.ok) throw new Error('Ошибка удаления')
+    alert('Товар удалён')
+    loadProducts()
+  } catch (e) {
+    alert(e.message || 'Ошибка удаления товара')
+  }
+}
+
+// ======= Заказы =======
+async function loadOrders() {
+  ordersLoading.value = true
+  ordersError.value = null
+  try {
+    const res = await fetch('http://localhost:8080/order/orders', {
+      method: 'GET',
+      credentials: 'include',
+    })
+    
+    if (!res.ok) {
+      const errorText = await res.text()
+      throw new Error(`HTTP ${res.status}: ${errorText}`)
+    }
+    
+    orders.value = await res.json()
+  } catch (e) {
+    ordersError.value = e.message || 'Ошибка загрузки заказов'
+    console.error('Order load error:', e)
+  } finally {
+    ordersLoading.value = false
+  }
+}
+
+function openOrderDetails(order) {
+  selectedOrder.value = order
+  isOrderDetailsOpen.value = true
+}
+
+async function confirmDeleteOrder(id) {
+  if (!confirm('Удалить заказ?')) return
+  try {
+    const res = await fetch(`http://localhost:8080/order/orders/${id}`, {
+      credentials: 'include',
+      method: 'DELETE',
+    })
+    if (!res.ok) throw new Error('Ошибка удаления')
+    alert('Заказ удалён')
+    loadOrders()
+  } catch (e) {
+    alert(e.message || 'Ошибка удаления заказа')
+  }
+}
+
+async function updateOrderStatus(orderId, newStatus) {
+  try {
+    const res = await fetch(`http://localhost:8080/order/order_update${orderId}`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: parseInt(newStatus) })
+    })
+
+    if (!res.ok) {
+      const errorText = await res.text()
+      throw new Error(`HTTP ${res.status}: ${errorText}`)
+    }
+    
+    // Обновляем локальные данные
+    const orderIndex = orders.value.findIndex(o => o.id === orderId)
+    if (orderIndex !== -1) {
+      orders.value[orderIndex].status = parseInt(newStatus)
+    }
+    
+  } catch (e) {
+    console.error('Status update error:', e)
+    alert(e.message || 'Не удалось обновить статус заказа')
+  }
+}
+
+// ======= Отзывы =======
+async function loadReviews() {
+  reviewsLoading.value = true
+  reviewsError.value = null
+  try {
+    const res = await fetch('http://localhost:8080/review/reviews_product/all')
+    if (!res.ok) throw new Error('Ошибка сети')
+    reviews.value = await res.json()
+  } catch (e) {
+    reviewsError.value = e.message || 'Ошибка загрузки отзывов'
+  } finally {
+    reviewsLoading.value = false
+  }
+}
+
+function editReview(review) {
+  alert('Здесь можно открыть модальное окно редактирования отзыва (реализация по желанию)')
+}
+
+async function confirmDeleteReview(id) {
+  if (!confirm('Удалить отзыв?')) return
+  try {
+    const res = await fetch(`http://localhost:8080/review/delete_review/${id}`, {
+      credentials: 'include',
+      method: 'DELETE',
+    })
+    if (!res.ok) throw new Error('Ошибка удаления')
+    alert('Отзыв удалён')
+    loadReviews()
+  } catch (e) {
+    alert(e.message || 'Ошибка удаления отзыва')
+  }
+}
+
+// Загрузка данных при монтировании
+onMounted(() => {
+  loadUsers()
+  loadProducts()
+  loadOrders()
+  loadReviews()
+})
+</script>
 
 
 <style scoped>
@@ -671,11 +656,14 @@ function getStatusBadgeVariant(status: number) {
   margin-bottom: 50px;
 }
 
-.modal-overlay {
-  @apply fixed inset-0 bg-black/50 flex items-center justify-center;
-}
 
-.modal {
-  @apply bg-white p-6 rounded-lg max-w-md w-full;
+/* Класс для обрезки текста с многоточием */
+.elipse {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.width{
+  max-width: 150px;
 }
 </style>

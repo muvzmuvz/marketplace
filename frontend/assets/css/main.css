@@ -1,6 +1,7 @@
 :root {
 	--caret-color: rgb(131, 86, 62);
 	--caret-hover: rgb(165, 125, 104);
+	overflow-x: hidden;
 }
 
 .bg-primary {

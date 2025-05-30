@@ -314,20 +314,29 @@ const filteredOrders = computed(() => {
     return matchesSearch && matchesStatus
   })
 })
-
-async function updateOrderStatus(orderId: number, status: string) {
+async function updateOrderStatus(orderId, newStatus) {
   try {
-    const response = await fetch(`http://localhost:8080/order/order_update/${orderId}?status=${status}`, {
+    const res = await fetch(`http://localhost:8080/order/order_update${orderId}`, {
       method: 'PUT',
-      credentials: 'include'
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: parseInt(newStatus) })
     })
 
-    if (!response.ok) throw new Error('Ошибка обновления статуса')
-
-    await loadOrders()
-  } catch (error) {
-    console.error(error)
-    alert('❌ Ошибка обновления статуса')
+    if (!res.ok) {
+      const errorText = await res.text()
+      throw new Error(`HTTP ${res.status}: ${errorText}`)
+    }
+    
+    // Обновляем локальные данные
+    const orderIndex = orders.value.findIndex(o => o.id === orderId)
+    if (orderIndex !== -1) {
+      orders.value[orderIndex].status = parseInt(newStatus)
+    }
+    
+  } catch (e) {
+    console.error('Status update error:', e)
+    alert(e.message || 'Не удалось обновить статус заказа')
   }
 }
 

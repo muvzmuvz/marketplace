@@ -8,14 +8,14 @@ const router = useRouter()
 
 const form = ref({
   email: 'moishemg@vk.com',
-  hashPassword: '2281337dD@'
+  password: '2281337dD@'
 })
 
 
 
 const login = async () => {
   try {
-    const response = await fetch('http://localhost:8080/authuser/log', {
+    const response = await fetch('http://localhost:8080/api/admin/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form.value),
@@ -29,32 +29,10 @@ const login = async () => {
     }
 
     console.log('✅ Вход выполнен! (как пользователь)');
-    router.push('/profile');
+    router.push('/admin-panel');
     return; // Если успешно, дальше не идем
   } catch (error) {
     console.warn('⚠️ Ошибка входа как пользователь, пробуем как продавец...');
-  }
-
-  // Пробуем войти как продавец, если первый запрос не удался
-  try {
-    const responseSeller = await fetch('http://localhost:8080/authseller/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form.value),
-      credentials: 'include'
-    });
-
-    console.log('Ответ сервера (продавец):', responseSeller);
-
-    if (!responseSeller.ok) {
-      throw new Error('Ошибка входа: Неверные данные');
-    }
-
-    console.log('✅ Вход выполнен! (как продавец)');
-    router.push('/profile');
-  } catch (error) {
-    console.error('❌ Ошибка входа:', error);
-    errorMessage.value = 'Ошибка авторизации. Проверьте email и пароль';
   }
 };
 
@@ -85,12 +63,28 @@ const login = async () => {
         <div>
           <label class="block text-sm font-medium text-gray-700">Пароль</label>
           <input
-            v-model="form.hashPassword"
+            v-model="form.password"
             type="password"
             placeholder="Введите пароль"
             class="w-full p-2 border rounded-md"
+            
           />
+          
         </div>
+
+        
+        <div>
+          <label class="block text-sm font-medium text-gray-700">Код</label>
+          <input
+            v-model="form.code"
+            type="password"
+            placeholder="Введите код"
+            class="w-full p-2 border rounded-md"
+            
+          />
+          
+        </div>
+        
 
         <p v-if="errorMessage" class="text-red-500 text-sm text-center">{{ errorMessage }}</p>
 
@@ -98,9 +92,7 @@ const login = async () => {
           Войти
         </button>
       </form>
-      <NuxtLink to="/auth/reg">
-        <p class="rout-to-reg">Зарегистрироваться</p>
-      </NuxtLink>
+  
     </div>
   </div>
 </template>

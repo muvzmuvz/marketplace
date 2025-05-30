@@ -102,6 +102,7 @@ const createOrder = async () => {
 
   try {
     const response = await fetch('http://localhost:8080/order/orders', {
+      credentials: 'include',
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
