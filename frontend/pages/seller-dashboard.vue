@@ -577,7 +577,7 @@ function cancelEdit() {
                 <Card v-for="product in products" :key="product.id">
                   <CardContent class="p-4 space-y-4">
                     <div class="flex items-start gap-4">
-                       <router-link :to="`/product/${product.productId}`">
+                       <router-link :to="`/product/${product.id}`">
                       <img v-if="product.images.length" :src="product.images[0].path" :alt="product.name"
                         class="w-24 h-24 rounded-lg object-cover" />
                         </router-link>
