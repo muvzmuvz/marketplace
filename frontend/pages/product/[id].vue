@@ -153,6 +153,38 @@ const userId = ref(null)
 
 const isAdded = ref(false)
 
+const addViewHistory = async (product) => {
+  try {
+    // Формируем тело запроса, берем нужные поля из product
+const body = {
+  productId: product.id || 0,  // вот оно! 
+  countProduct: 0, 
+  category: product.category || 0,
+  price: product.price || 0,
+  name: product.name || '',
+  description: product.description || '',
+  userId: userId.value || 0,
+  id: product.id || 0,
+  imagePath: product.images?.[0]?.path || '',
+  characteristic: product.characteristic || '',
+  images: product.images || []
+};
+    const response = await fetch(`http://localhost:8080/ProductViewHistory/add_history/${product.id}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': '*/*'
+      },
+      credentials: 'include',
+      body: JSON.stringify(body)
+    });
+
+    if (!response.ok) throw new Error('Ошибка при добавлении истории просмотра');
+  } catch (error) {
+    console.error('Не удалось добавить историю просмотра:', error);
+  }
+}
+
 const fetchProduct = async () => {
   try {
     const response = await fetch(`http://localhost:8080/product/product/${productId}`)
@@ -303,7 +335,12 @@ const averageRating = computed(() => {
 
 onMounted(async () => {
   await fetchUser()
-  await fetchProduct()
+   await fetchProduct()
+
+ if (product.value) {
+    await addViewHistory(product.value);
+  }
+
   await fetchComments()
 })
 

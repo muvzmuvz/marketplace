@@ -62,7 +62,14 @@
 
 <script>
 import '@/assets/css/productPage.css'
+
 export default {
+  props: {
+    currentProductId: {
+      type: Number,
+      required: true
+    }
+  },
   data() {
     return {
       products: [],
@@ -79,10 +86,21 @@ export default {
         const response = await fetch('http://localhost:8080/ProductViewHistory/history', {
           credentials: 'include'
         });
-        
+
         if (!response.ok) throw new Error('Ошибка загрузки истории');
-        
-        const data = await response.json();
+
+        let data = await response.json();
+
+        const currentId = this.currentProductId;
+
+        if (currentId) {
+          const currentIndex = data.findIndex(p => p.id === currentId);
+          if (currentIndex > -1) {
+            const [currentProduct] = data.splice(currentIndex, 1);
+            data.unshift(currentProduct);
+          }
+        }
+
         this.products = data;
       } catch (error) {
         this.error = 'Не удалось загрузить историю просмотров';
@@ -92,7 +110,7 @@ export default {
     },
     async removeFromHistory(productId) {
       if (!confirm('Удалить товар из истории?')) return;
-      
+
       try {
         await fetch(`http://localhost:8080/ProductViewHistory/${productId}`, {
           method: 'DELETE',
@@ -105,7 +123,7 @@ export default {
     },
     async clearHistory() {
       if (!confirm('Очистить всю историю просмотров?')) return;
-      
+
       try {
         await fetch('http://localhost:8080/ProductViewHistory/clear', {
           method: 'POST',
@@ -169,23 +187,61 @@ export default {
 .scroll-container {
   overflow-x: auto;
   padding-bottom: 15px;
+  scroll-behavior: smooth; /* Плавный скролл */
+  position: relative;
+
+    scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgba(131, 86, 62) transparent; /* Firefox */
+}
+
+/* Chrome, Edge, Safari */
+.scroll-container::-webkit-scrollbar {
+  height: 6px; 
+}
+
+.scroll-container::before,
+.scroll-container::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 15px;
+  width: 30px;
+  pointer-events: none; /* Чтобы тени не мешали кликам */
+  z-index: 10;
+}
+
+/* Chrome, Edge, Safari */
+.scroll-container::-webkit-scrollbar {
+  height: 6px; /* высота горизонтального скролла */
+}
+
+.scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-container::-webkit-scrollbar-thumb {
+  background-color: #b10080; /* цвет скролла */
+  border-radius: 3px;
+  border: 1px solid transparent;
+}
+
+/* Добавим эффект при наведении на скролл */
+.scroll-container::-webkit-scrollbar-thumb:hover {
+  background-color: #870060;
 }
 
 .history-grid {
-  display: inline-flex;
+  display: flex; /* inline-flex можно оставить, но flex удобнее */
   gap: 15px;
   padding: 5px 0;
+  /* Чтобы не было вертикальной прокрутки */
+  overflow-y: hidden;
 }
 
 .product-card {
-  position: relative;
+  flex-shrink: 0; /* Чтобы не сжимались */
   width: 200px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: transform 0.2s;
-  cursor: pointer;
-  flex-shrink: 0;
+  /* Остальное без изменений */
 }
 
 .product-card:hover {
