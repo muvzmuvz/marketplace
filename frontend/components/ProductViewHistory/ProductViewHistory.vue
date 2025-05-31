@@ -82,32 +82,39 @@ export default {
   },
   methods: {
     async fetchHistory() {
-      try {
-        const response = await fetch('http://localhost:8080/ProductViewHistory/history', {
-          credentials: 'include'
-        });
+  try {
+    const response = await fetch('http://localhost:8080/ProductViewHistory/history', {
+      credentials: 'include'
+    });
 
-        if (!response.ok) throw new Error('Ошибка загрузки истории');
+    if (!response.ok) throw new Error('Ошибка загрузки истории');
 
-        let data = await response.json();
+    let data = await response.json();
 
-        const currentId = this.currentProductId;
+    // Сортируем по дате просмотра - новые первыми
+    data.sort((a, b) => new Date(b.viewDate) - new Date(a.viewDate));
 
-        if (currentId) {
-          const currentIndex = data.findIndex(p => p.id === currentId);
-          if (currentIndex > -1) {
-            const [currentProduct] = data.splice(currentIndex, 1);
-            data.unshift(currentProduct);
-          }
-        }
+    // Извлекаем продукты
+    let products = data.map(item => item.product);
 
-        this.products = data;
-      } catch (error) {
-        this.error = 'Не удалось загрузить историю просмотров';
-      } finally {
-        this.loading = false;
+    const currentId = this.currentProductId;
+
+    if (currentId) {
+      // Если текущий продукт есть в списке, помещаем его в начало
+      const currentIndex = products.findIndex(p => p.id === currentId);
+      if (currentIndex > -1) {
+        const [currentProduct] = products.splice(currentIndex, 1);
+        products.unshift(currentProduct);
       }
-    },
+    }
+
+    this.products = products;
+  } catch (error) {
+    this.error = 'Не удалось загрузить историю просмотров';
+  } finally {
+    this.loading = false;
+  }
+},
     async removeFromHistory(productId) {
       if (!confirm('Удалить товар из истории?')) return;
 
@@ -125,8 +132,8 @@ export default {
       if (!confirm('Очистить всю историю просмотров?')) return;
 
       try {
-        await fetch('http://localhost:8080/ProductViewHistory/clear', {
-          method: 'POST',
+        await fetch('http://localhost:8080/ProductViewHistory/allhistory', {
+          method: 'DELETE',
           credentials: 'include'
         });
         this.products = [];

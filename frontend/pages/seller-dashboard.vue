@@ -474,7 +474,7 @@ function cancelEdit() {
                             <SelectContent>
                               <SelectItem value="0">В сборке</SelectItem>
                               <SelectItem value="1">В пути</SelectItem>
-                              <SelectItem value="1">Завершен</SelectItem>
+                              <SelectItem value="2">Завершен</SelectItem>
                             </SelectContent>
                           </Select>
                         </TableCell>
