@@ -50,6 +50,11 @@ public class ProductViewHistoryService : IProductViewHistoryService
         return product;
     }
 
+    public async Task RemoveAllHistory(int userId)
+    {
+        await _productViewHistoryRepository.RemoveAllHisory(userId);
+    }
+
     public async Task UpdateHistoryAsync(Product product, int userId,int productId)
     {
         var result = await _productService.GetProductAsync(productId);

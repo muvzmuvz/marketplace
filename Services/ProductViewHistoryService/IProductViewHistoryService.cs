@@ -9,4 +9,5 @@ public interface IProductViewHistoryService
     Task AddHistoryAsync(Product product,int userId);
     Task UpdateHistoryAsync(Product product, int userId, int productId);
     Task DeleteHistoryAsync(int userId,int productId);
+    Task RemoveAllHistory(int userId);
 }

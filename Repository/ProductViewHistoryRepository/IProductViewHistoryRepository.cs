@@ -9,4 +9,5 @@ public interface IProductViewHistoryRepository
     Task UpdateProducthistory(int userId,Product product,int productId);
     Task DeleteProducthistory(int userId,int productId);
     Task<Product> GetProduct(int userId,int productId);
+    Task RemoveAllHisory(int userId);
 }

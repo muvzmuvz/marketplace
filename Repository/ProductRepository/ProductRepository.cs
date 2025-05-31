@@ -57,13 +57,38 @@ public class ProductRepository : IProductRepository
 
     public async Task<ICollection<Product>> GetByName(string name)
     {
-        var products = await _context.Products.Include(image => image.Images).Where(p => p.Name == name).ToListAsync();
-        if (!products.Any())
-        {
-            throw new NotFoundExeption("Продуктов с данным именем не существует");
-        }
+        var products = await _context.Products
+        .Include(image => image.Images)
+        .ToListAsync();
 
-        return products;
+        return products
+            .Where(p =>
+                p.Name.Contains(name, StringComparison.OrdinalIgnoreCase) ||
+                ComputeLevenshteinDistance(p.Name.ToLower(), name.ToLower()) <= 2)
+            .ToList();
+    }
+
+    private int ComputeLevenshteinDistance(string s, string t)
+    {
+        int[,] d = new int[s.Length + 1, t.Length + 1];
+
+        for (int i = 0; i <= s.Length; i++)
+            d[i, 0] = i;
+
+        for (int j = 0; j <= t.Length; j++)
+            d[0, j] = j;
+
+        for (int j = 1; j <= t.Length; j++)
+            for (int i = 1; i <= s.Length; i++)
+                if (s[i - 1] == t[j - 1])
+                    d[i, j] = d[i - 1, j - 1];
+                else
+                    d[i, j] = Math.Min(Math.Min(
+                        d[i - 1, j] + 1,     // удаление
+                        d[i, j - 1] + 1),    // вставка
+                        d[i - 1, j - 1] + 1); // замена
+
+        return d[s.Length, t.Length];
     }
 
     public async Task<List<Product>> GetProductByManagerIdAsync(int managerId)

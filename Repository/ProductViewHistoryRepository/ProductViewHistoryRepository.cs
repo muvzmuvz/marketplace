@@ -73,6 +73,17 @@ public class ProductViewHistoryRepository : IProductViewHistoryRepository
         return product.Product;
     }
 
+    public async Task RemoveAllHisory(int userId)
+    {
+        var history = _appDbContext.ProductViewHistories
+            .Where(h => h.UserId == userId);
+
+        _appDbContext.ProductViewHistories.RemoveRange(history);
+
+        await _appDbContext.SaveChangesAsync();
+
+    }
+
     public async Task UpdateProducthistory(int userId, Product product,int productId)
     {
         var viewHistory = await _appDbContext.ProductViewHistories

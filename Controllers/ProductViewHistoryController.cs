@@ -155,4 +155,13 @@ public class ProductViewHistoryController : ControllerBase
             return StatusCode(500, "Внутренняя ошибка сервера");
         }
     }
+
+    [HttpDelete]
+    [Route("AllHistory/{userId}")]
+    public async Task<IActionResult> RemoveAllHistoryAsync(int userId)
+    {
+        await _productViewHistoryService.RemoveAllHistory(userId);
+
+        return NoContent();
+    }
 }
