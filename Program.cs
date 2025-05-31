@@ -52,7 +52,8 @@ builder.Services.AddAutoMapper(
     , typeof(CartProductProfiles)
     , typeof(ReviewProfiles)
     , typeof(OrderProfile)
-    , typeof(OrderProductProfile));
+    , typeof(OrderProductProfile)
+    , typeof(ProductViewHistoryProfile));
 
 
 builder.Host.UseSerilog((context, services, configuration) => configuration

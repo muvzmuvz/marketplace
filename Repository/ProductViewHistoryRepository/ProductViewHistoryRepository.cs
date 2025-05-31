@@ -47,18 +47,17 @@ public class ProductViewHistoryRepository : IProductViewHistoryRepository
         }
     }
 
-    public async Task<IEnumerable<Product>> GetAllHistory(int userId)
+    public async Task<IEnumerable<ProductViewHistory>> GetAllHistory(int userId)
     {
-        var viewHistories = await _appDbContext.ProductViewHistories
-        .Where(h => h.UserId == userId)
-        .Include(h => h.Product) 
-        .ThenInclude(product => product.Images)
-        .ToListAsync(); 
-
-        return viewHistories.Select(h => h.Product).ToList();
+        return await _appDbContext.ProductViewHistories
+            .Include(h => h.Product)
+                .ThenInclude(p => p.Images)
+            .Where(h => h.UserId == userId)
+            .OrderByDescending(h => h.ViewDate)
+            .ToListAsync();
     }
 
-    public async Task<Product> GetProduct(int userId, int productId)
+    public async Task<ProductViewHistory> GetProduct(int userId, int productId)
     {
         var product = await _appDbContext.ProductViewHistories
             .Include(h => h.Product)
@@ -70,7 +69,7 @@ public class ProductViewHistoryRepository : IProductViewHistoryRepository
             throw new NotFoundExeption("Данного продукта нет в истории");
         }
 
-        return product.Product;
+        return product;
     }
 
     public async Task RemoveAllHisory(int userId)

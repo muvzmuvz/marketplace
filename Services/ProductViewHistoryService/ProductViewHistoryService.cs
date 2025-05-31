@@ -36,14 +36,14 @@ public class ProductViewHistoryService : IProductViewHistoryService
         await _productViewHistoryRepository.DeleteProducthistory(userId,productId);
     }
 
-    public async Task<IEnumerable<Product>> GetAllHistoryAsync(int userId)
+    public async Task<IEnumerable<ProductViewHistory>> GetAllHistoryAsync(int userId)
     {
         var products = await _productViewHistoryRepository.GetAllHistory(userId);
 
         return products;
     }
 
-    public async Task<Product> GetHistoryAsync(int userId, int productId)
+    public async Task<ProductViewHistory> GetHistoryAsync(int userId, int productId)
     {
         var product = await _productViewHistoryRepository.GetProduct(userId,productId);
 

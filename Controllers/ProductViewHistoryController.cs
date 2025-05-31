@@ -43,7 +43,7 @@ public class ProductViewHistoryController : ControllerBase
 
             var history = await _productViewHistoryService.GetAllHistoryAsync(userId);
 
-            var products = _mapper.Map<List<ProductDto>>(history);
+            var products = _mapper.Map<List<ProductViewHsitoryDto>>(history);
             return Ok(products);
         }
         catch (Exception ex)
@@ -114,7 +114,7 @@ public class ProductViewHistoryController : ControllerBase
             _logger.LogInformation("Получение товара с ID {ProductId} из истории просмотров для пользователя с ID {UserId}", productId, userId);
             var product = await _productViewHistoryService.GetHistoryAsync(userId, productId);
 
-            var productDto = _mapper.Map<ProductDto>(product);
+            var productDto = _mapper.Map<ProductViewHsitoryDto>(product);
             return Ok(productDto);
         }
         catch (NotFoundExeption ex)

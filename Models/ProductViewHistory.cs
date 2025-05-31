@@ -1,13 +1,13 @@
-﻿namespace marketplace_api.Models;
+﻿    namespace marketplace_api.Models;
 
-public class ProductViewHistory
-{
-    public int Id { get; set; } 
+    public class ProductViewHistory
+    {
+        public int Id { get; set; } 
 
-    public int UserId { get; set; } 
+        public int UserId { get; set; }     
 
-    public int ProductId { get; set; } 
-    public Product Product { get; set; } 
+        public int ProductId { get; set; } 
+        public Product Product { get; set; } 
 
-    public DateTime ViewDate { get; set; } = DateTime.UtcNow; 
-}
+        public DateTime ViewDate { get; set; } = DateTime.UtcNow; 
+    }
