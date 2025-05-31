@@ -157,9 +157,11 @@ public class ProductViewHistoryController : ControllerBase
     }
 
     [HttpDelete]
-    [Route("AllHistory/{userId}")]
-    public async Task<IActionResult> RemoveAllHistoryAsync(int userId)
+    [Route("AllHistory")]
+    public async Task<IActionResult> RemoveAllHistoryAsync()
     {
+        var userId = _jwtService.GetIdUser(HttpContext);
+        
         await _productViewHistoryService.RemoveAllHistory(userId);
 
         return NoContent();
