@@ -25,7 +25,7 @@
       POSTGRES_PASSWORD: YourStrongPassword123!
       POSTGRES_DB: marketplace
     ports:
-      - "5432:5432"  
+      - "5432:5432"
     volumes:
       - db_data:/var/lib/postgresql/data
     container_name: postgres-db
@@ -42,9 +42,21 @@
     ports:
       - "6379:6379"
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: marketplace-frontend
+    ports:
+      - "3000:3000"
+    networks:
+      - market
+    depends_on:
+      - marketplace-api
+
 networks:
   market:
-    driver: bridge  
+    driver: bridge
 
 volumes:
   db_data:
