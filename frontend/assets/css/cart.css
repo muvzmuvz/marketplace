@@ -48,6 +48,11 @@
 
   }
 }
+.card--descripion{
+  white-space: nowrap; /* Не переносить текст на новую строку */
+  overflow: hidden; /* Скрыть всё, что не помещается */
+  text-overflow: ellipsis;
+}
 
 .cart-item-info {
   display: flex;
