@@ -10,7 +10,7 @@ export const config = {
 }
 
 export default defineEventHandler(async (event) => {
-  const uploadDir = path.resolve('public/uploads')
+const uploadDir = path.resolve(process.cwd(), 'public/uploads')
 
   // Убедимся, что папка для загрузки существует
   if (!fs.existsSync(uploadDir)) {
@@ -39,7 +39,7 @@ export default defineEventHandler(async (event) => {
       }
 
       const fileName = path.basename(uploadedFile.filepath)
-      const publicPath = `/uploads/${fileName}`
+      const publicPath = `uploads/${fileName}`
 
       resolve({ imagePath: publicPath })
     })

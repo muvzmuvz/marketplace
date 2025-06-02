@@ -3,6 +3,9 @@ export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
   modules: ['@nuxtjs/tailwindcss', 'shadcn-nuxt'],
+  routeRules: {
+    '/uploads/**': { static: true } // Раздаем файлы из uploads как статику
+  },
   shadcn: {
     /**
      * Prefix for all the imported component

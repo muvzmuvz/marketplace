@@ -11,6 +11,7 @@
       - "8080:8080"
     volumes:
       - ./Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+      - ./frontend/public/uploads:/app/public/uploads
     container_name: marketplace-api
     networks:
       - market
@@ -49,6 +50,8 @@
     container_name: marketplace-frontend
     ports:
       - "3000:3000"
+    volumes:
+      - ./frontend/public/uploads:/app/public/uploads
     networks:
       - market
     depends_on:
