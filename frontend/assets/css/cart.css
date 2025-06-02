@@ -43,6 +43,10 @@
   max-height: 200px;
   border-radius: 5px;
   object-fit: fill;
+  @media (max-width: 352px) {
+    max-width: 138.5px;
+
+  }
 }
 
 .cart-item-info {
