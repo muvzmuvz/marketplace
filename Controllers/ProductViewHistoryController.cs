@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using FluentValidation;
 using marketplace_api.CustomExeption;
 using marketplace_api.Models;
 using marketplace_api.ModelsDto;
