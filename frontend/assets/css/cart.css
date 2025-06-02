@@ -30,7 +30,7 @@
   object-fit: fill;
   gap: 15px;
   border-bottom: 1px solid #ddd;
-  max-width: 200px;
+  max-width: 100%;
   padding: 10px 0;
   @media (max-width: 1023px) {
     grid-template-rows: auto;
@@ -38,16 +38,7 @@
   }
 }
 
-.cart-item-img {
-  max-width: 100%;
-  max-height: 200px;
-  border-radius: 5px;
-  object-fit: fill;
-  @media (max-width: 352px) {
-    max-width: 138.5px;
 
-  }
-}
 .card--descripion{
   white-space: nowrap; /* Не переносить текст на новую строку */
   overflow: hidden; /* Скрыть всё, что не помещается */
