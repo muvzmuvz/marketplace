@@ -18,7 +18,6 @@
     :src="getImageUrl(product.images[activeIndex]?.path)"
     :alt="`Изображение товара ${activeIndex + 1}`"
     class="main-image"
-    @error="handleImageError"
   />
 </div>
 
@@ -318,15 +317,10 @@ const addToCart = async () => {
 }
 
 const getImageUrl = (path) => {
-  if (!path) return '/placeholder-image.jpg'
   if (path.startsWith('http')) return path
-  return `http://localhost:3000${path}`
+  return `http://localhost:3000/${path}`
 }
 
-const handleImageError = (event) => {
-  event.target.src = '/placeholder-image.jpg'
-  event.target.style.objectFit = 'cover'
-}
 
 const formattedPrice = computed(() =>
   new Intl.NumberFormat('ru-RU', {
