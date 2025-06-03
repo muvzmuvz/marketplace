@@ -8,7 +8,8 @@ const router = useRouter()
 
 const form = ref({
   email: 'moishemg@vk.com',
-  password: '2281337dD@'
+  password: '2281337dD@',
+  code: ''
 })
 
 

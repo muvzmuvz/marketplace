@@ -122,7 +122,8 @@
 
                   <div class="flex gap-2">
                     <Button variant="outline" class="flex-1" @click="startEdit(product)">Редактировать</Button>
-                    <Button variant="destructive" class="flex-1" @click="confirmDeleteProduct(product.id)">Удалить</Button>
+                    <Button variant="destructive" class="flex-1"
+                      @click="confirmDeleteProduct(product.id)">Удалить</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -173,7 +174,7 @@
       </TabsContent>
 
       <!-- Вкладка Заказы -->
-        <TabsContent value="orders">
+      <TabsContent value="orders">
         <Card>
           <CardContent class="p-6 space-y-6">
             <div class="flex justify-between items-center">
@@ -237,10 +238,10 @@
                             <SelectValue :placeholder="getStatusText(order.status)" />
                           </SelectTrigger>
                           <SelectContent>
-                    <SelectItem value="all">Все статусы</SelectItem>
-                    <SelectItem value="0">В сборке</SelectItem>
-                    <SelectItem value="1">В пути</SelectItem>
-                    <SelectItem value="2">Завершен</SelectItem>
+                            <SelectItem value="all">Все статусы</SelectItem>
+                            <SelectItem value="0">В сборке</SelectItem>
+                            <SelectItem value="1">В пути</SelectItem>
+                            <SelectItem value="2">Завершен</SelectItem>
                           </SelectContent>
                         </Select>
                       </TableCell>
@@ -266,9 +267,9 @@
           <DialogContent class="sm:max-w-2xl">
             <DialogHeader>
               <DialogTitle>Заказ #{{ selectedOrder?.id }}</DialogTitle>
-                          <DialogDescription>
-              Дата создания: {{ selectedOrder ? formatDate(selectedOrder.dateCreated) : '' }}
-            </DialogDescription>
+              <DialogDescription>
+                Дата создания: {{ selectedOrder ? formatDate(selectedOrder.dateCreated) : '' }}
+              </DialogDescription>
             </DialogHeader>
 
             <div class="space-y-2">
@@ -286,10 +287,10 @@
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  
+
                   <TableRow v-for="item in selectedOrder?.products" :key="item.productId">
                     <TableCell>
-                     
+
                       <div class="flex items-center gap-3 ">
                         <img v-if="item.product.images[0].path.length" :src="item.product.images[0].path"
                           class="w-12 h-12 rounded object-cover" />
@@ -297,7 +298,7 @@
                           <div class="width elipse">{{ item.product.name }}</div>
                           <div class="text-sm text-gray-500">{{ item.product.description }}</div>
                         </div>
-                     
+
                       </div>
                     </TableCell>
                     <TableCell>{{ formatCurrency(item.price) }}</TableCell>
@@ -357,7 +358,10 @@
                   </div>
                   <p>{{ review.comment }}</p>
                   <p class="text-sm text-gray-500">Пользователь: {{ review.userId }}</p>
-                  <p class="text-sm text-gray-500">Товар: {{ review.productId }}</p>
+                  <router-link :to="`/product/${review.productId}`" class="text-blue-500 hover:underline">
+                    <p class="text-sm text-gray-500">Товар: {{ review.productId }}</p>
+                  </router-link>
+                  <p class="text-sm text-gray-500">Текст отзыва: {{ review.description }}</p>
                 </CardContent>
               </Card>
             </div>
@@ -371,10 +375,10 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { 
-  RefreshCwIcon, 
-  Loader2Icon, 
-  EyeIcon, 
+import {
+  RefreshCwIcon,
+  Loader2Icon,
+  EyeIcon,
   Trash2Icon,
   Edit2Icon
 } from 'lucide-vue-next'
@@ -426,15 +430,15 @@ const fetchUserData = async () => {
     })
 
     if (!response.ok) throw new Error('Ошибка авторизации')
-    
+
     userData.value = await response.json()
-    
+
     // Перенаправление если не администратор
     if (userData.value.role !== 0) {
       router.push('/auth/admin-login')
       return
     }
-    
+
   } catch (error) {
     console.error('Ошибка:', error)
     router.push('/auth/admin-login')
@@ -451,20 +455,20 @@ const reviewsError = ref(null)
 // Фильтрация заказов
 const filteredOrders = computed(() => {
   let result = orders.value
-  
+
   // Фильтр по ID заказа
   if (searchQuery.value) {
-    result = result.filter(order => 
+    result = result.filter(order =>
       String(order.id).includes(searchQuery.value))
   }
-  
+
   // Фильтр по статусу
   if (statusFilter.value !== 'all') {
-    result = result.filter(order => 
+    result = result.filter(order =>
       String(order.status) === statusFilter.value
     )
   }
-  
+
   return result
 })
 
@@ -478,9 +482,9 @@ function formatDate(dateStr) {
 // Форматирование валюты
 function formatCurrency(value) {
   if (typeof value !== 'number') return '—'
-  return new Intl.NumberFormat('ru-RU', { 
-    style: 'currency', 
-    currency: 'RUB' 
+  return new Intl.NumberFormat('ru-RU', {
+    style: 'currency',
+    currency: 'RUB'
   }).format(value)
 }
 
@@ -611,12 +615,12 @@ async function loadOrders() {
       method: 'GET',
       credentials: 'include',
     })
-    
+
     if (!res.ok) {
       const errorText = await res.text()
       throw new Error(`HTTP ${res.status}: ${errorText}`)
     }
-    
+
     orders.value = await res.json()
   } catch (e) {
     ordersError.value = e.message || 'Ошибка загрузки заказов'
@@ -728,7 +732,8 @@ onMounted(() => {
   white-space: nowrap;
   text-overflow: ellipsis;
 }
-.width{
+
+.width {
   max-width: 150px;
 }
 </style>
