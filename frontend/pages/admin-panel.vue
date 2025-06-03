@@ -13,54 +13,86 @@
       <!-- Вкладка Пользователи -->
       <TabsContent value="users">
         <Card>
-          <CardContent class="p-6 space-y-6">
-            <div class="flex justify-between items-center mb-4">
-              <h2 class="text-2xl font-semibold">Пользователи</h2>
-              <Button @click="loadUsers" variant="outline">
-                <RefreshCwIcon class="w-4 h-4 mr-2" :class="{ 'animate-spin': usersLoading }" />
-                Обновить
+  <CardContent class="p-6 space-y-6">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-2xl font-semibold">Пользователи</h2>
+      <div class="space-x-2">
+        <Button @click="openCreateUserModal" variant="default">
+          + Создать пользователя
+        </Button>
+        <Button @click="loadUsers" variant="outline">
+          <RefreshCwIcon class="w-4 h-4 mr-2" :class="{ 'animate-spin': usersLoading }" />
+          Обновить
+        </Button>
+      </div>
+    </div>
+
+    <div v-if="usersLoading" class="flex justify-center py-8">
+      <Loader2Icon class="w-8 h-8 animate-spin" />
+    </div>
+
+    <div v-else-if="usersError" class="text-red-500 text-center py-4">
+      {{ usersError }}
+    </div>
+
+    <div v-else>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>ID</TableHead>
+            <TableHead>Имя</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Роль</TableHead>
+            <TableHead class="text-right">Действия</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow v-for="user in users" :key="user.id">
+            <TableCell>{{ user.id }}</TableCell>
+            <TableCell>{{ user.name || '—' }}</TableCell>
+            <TableCell>{{ user.email }}</TableCell>
+            <TableCell>{{ user.role || '—' }}</TableCell>
+            <TableCell class="text-right space-x-2">
+              <Button variant="ghost" size="sm" @click="viewUserDetails(user)">
+                <EyeIcon class="w-4 h-4" />
               </Button>
-            </div>
+              <Button variant="destructive" size="sm" @click="confirmDeleteUser(user.id)">
+                <Trash2Icon class="w-4 h-4" />
+              </Button>
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+    </div>
+  </CardContent>
+</Card>
 
-            <div v-if="usersLoading" class="flex justify-center py-8">
-              <Loader2Icon class="w-8 h-8 animate-spin" />
-            </div>
+<!-- 🧾 Модалка создания -->
+<Dialog :open="createUserDialog" @close="createUserDialog = false">
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Создание пользователя</DialogTitle>
+    </DialogHeader>
 
-            <div v-else-if="usersError" class="text-red-500 text-center py-4">
-              {{ usersError }}
-            </div>
+    <div class="space-y-4">
+      <!-- Роль -->
+      <select v-model="newUser.role" class="w-full border rounded px-3 py-2">
+        <option value="user">Обычный пользователь</option>
+        <option value="seller">Продавец</option>
+      </select>
 
-            <div v-else>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Имя</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Роль</TableHead>
-                    <TableHead class="text-right">Действия</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  <TableRow v-for="user in users" :key="user.id">
-                    <TableCell>{{ user.id }}</TableCell>
-                    <TableCell>{{ user.name || '—' }}</TableCell>
-                    <TableCell>{{ user.email }}</TableCell>
-                    <TableCell>{{ user.role || '—' }}</TableCell>
-                    <TableCell class="text-right space-x-2">
-                      <Button variant="ghost" size="sm" @click="viewUserDetails(user)">
-                        <EyeIcon class="w-4 h-4" />
-                      </Button>
-                      <Button variant="destructive" size="sm" @click="confirmDeleteUser(user.id)">
-                        <Trash2Icon class="w-4 h-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+      <!-- Имя (только для обычных пользователей) -->
+      <Input v-model="newUser.name" placeholder="Имя"  />
+      <Input v-model="newUser.email" placeholder="Email" />
+      <Input v-model="newUser.password" type="password" placeholder="Пароль" />
+    </div>
+
+    <DialogFooter>
+      <Button variant="outline" @click="createUserDialog = false">Отмена</Button>
+      <Button @click="createUser">Создать</Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
 
         <!-- Модальное окно деталей пользователя -->
         <Dialog v-model:open="isUserDetailsOpen">
@@ -417,6 +449,71 @@ const isOrderDetailsOpen = ref(false)
 const searchQuery = ref('')
 const statusFilter = ref('all')
 const isLoading = ref(true)
+const createUserDialog = ref(false)
+const newUser = ref({
+  role: 'user',
+  name: '',
+  email: '',
+  password: ''
+})
+
+function openCreateUserModal() {
+  newUser.value = {
+    role: 'user',
+    name: '',
+    email: '',
+    password: ''
+  }
+  createUserDialog.value = true
+}
+
+// ➕ Создание пользователя
+async function createUser() {
+  try {
+    let url = ''
+    let body = {}
+
+    if (newUser.value.role === 'user') {
+      url = 'http://localhost:8080/authuser/reg'
+      body = {
+        name: newUser.value.name,
+        email: newUser.value.email,
+        hashPassword: newUser.value.password,
+        role: 1
+      }
+    } else {
+      url = 'http://localhost:8080/authuser/reg'
+      body = {
+        name: newUser.value.name,
+        email: newUser.value.email,
+        hashPassword: newUser.value.password,
+        role: 2
+      }
+    }
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: '*/*'
+      },
+      body: JSON.stringify(body)
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      throw new Error(`Ошибка ${response.status}: ${errorText}`)
+    }
+
+    createUserDialog.value = false
+    loadUsers()
+  } catch (error) {
+    alert('Ошибка при создании: ' + error.message)
+  }
+}
+
+
+
 
 const isAdmin = computed(() => {
   return userData.value?.role === 0
