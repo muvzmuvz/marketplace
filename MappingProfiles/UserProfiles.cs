@@ -17,7 +17,12 @@ public class UserProfiles : Profile
 
         CreateMap<User,UserResponseDto>();
 
-        CreateMap<AdminDto, User>();
+        CreateMap<AdminDto, User>()
+                .ForMember(dest => dest.HashPassword, opt => opt.MapFrom(src => src.Password))
+                .ForMember(dest => dest.Name, opt => opt.Ignore())
+                .ForMember(dest => dest.Orders, opt => opt.Ignore())
+                .ForMember(dest => dest.Reviews, opt => opt.Ignore())
+                .ForMember(dest => dest.Products, opt => opt.Ignore());
         CreateMap<User, AdminDto>();
 
         CreateMap<User, UserResponseDto>();
