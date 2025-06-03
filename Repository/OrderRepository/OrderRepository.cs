@@ -74,6 +74,7 @@ public class OrderRepository : IOrderRepository
         var orders = await _context.Orders
         .Include(ord => ord.Products)
             .ThenInclude(pr => pr.Product) 
+            .ThenInclude(image  => image.Images)
         .Where(ord => ord.Products.Any(pr => pr.Product.UserId == sellerId)) 
         .ToListAsync();
 
