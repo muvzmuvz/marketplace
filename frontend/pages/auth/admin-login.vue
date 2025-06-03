@@ -7,8 +7,8 @@ import NavMenu from '@/components/NavMenu/NavMenu.vue'
 const router = useRouter()
 
 const form = ref({
-  email: 'moishemg@vk.com',
-  password: '2281337dD@',
+  email: '',
+  password: '',
   code: ''
 })
 

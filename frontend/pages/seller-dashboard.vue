@@ -688,13 +688,15 @@ function cancelEdit() {
                 <TableBody>
                   <TableRow v-for="item in selectedOrder?.products" :key="item.productId">
                     <TableCell>
-                      <div class="flex items-center gap-3 ">
+
+                      <div class="flex items-center gap-3 width ">
                         <img v-if="item.product.images[0].path.length" :src="item.product.images[0].path"
                           class="w-12 h-12 rounded object-cover" />
                         <div>
-                          <div class="width elipse">{{ item.product.name }}</div>
-                          <div class="text-sm text-gray-500">{{ item.product.description }}</div>
+                          <div class=" ">{{ item.product.name }}</div>
+                          <div class="text-sm text-gray-500 elipse">{{ item.product.description }}</div>
                         </div>
+
                       </div>
                     </TableCell>
                     <TableCell>{{ formatCurrency(item.price) }}</TableCell>
