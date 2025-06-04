@@ -14,9 +14,11 @@ const filteredProducts = ref([]);  // Массив отфильтрованны�
 
 // Функция фильтрации товаров (для работы с API)
 const fetchProducts = async () => {
+    const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
   try {
     // Отправляем запрос с параметром поиска
-    const response = await fetch(`http://localhost:8080/product/name?name=${searchQuery.value}`);
+    const response = await fetch(`${apiUrl}/product/name?name=${searchQuery.value}`);
     const data = await response.json();
     
     // Загружаем полученные товары

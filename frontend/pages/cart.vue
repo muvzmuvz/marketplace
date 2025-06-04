@@ -15,8 +15,10 @@ const userId = ref(null); // Для хранения userId
 
 // Функция для загрузки данных о пользователе
 const fetchUser = async () => {
+    const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
   try {
-    const response = await fetch('http://localhost:8080/user/user', {
+    const response = await fetch(`${apiUrl}/user/user`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -38,8 +40,10 @@ const fetchUser = async () => {
 
 // Функция для загрузки корзины
 const fetchCartItems = async () => {
+    const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
   try {
-    const response = await fetch('http://localhost:8080/cart/products', {
+    const response = await fetch(`${apiUrl}/cart/products`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -71,8 +75,10 @@ const fetchCartItems = async () => {
 
 // Функция для удаления товара из корзины
 const removeItem = async (productId) => {
+    const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
   try {
-    const response = await fetch(`http://localhost:8080/cart/product_del/${productId}`, {
+    const response = await fetch(`${apiUrl}/cart/product_del/${productId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -111,9 +117,10 @@ const createOrder = async () => {
       quantity: item.quantity,
     })),
   };
-
+  const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
   try {
-    const response = await fetch('http://localhost:8080/order/orders', {
+    const response = await fetch(`${apiUrl}/order/orders`, {
       credentials: 'include',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -141,9 +148,11 @@ const createOrder = async () => {
 
 
 const clearCart = async () => {
+    const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
   try {
     for (const item of cartItems.value) {
-      const response = await fetch(`http://localhost:8080/cart/product_del/${item.id}`, {
+      const response = await fetch(`${apiUrl}/cart/product_del/${item.id}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

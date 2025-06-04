@@ -58,8 +58,10 @@ const isLoading = ref(true)
 const isSeller = computed(() => user.value?.role === 2)
 
 const fetchProfile = async () => {
+  const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
   try {
-    const response = await fetch('http://localhost:8080/user/user', {
+    const response = await fetch(`${apiUrl}/user/user`, {
       method: 'GET',
       credentials: 'include'
     })
@@ -127,9 +129,11 @@ onMounted(() => {
 
 
 async function loadProducts() {
+    const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
   loading.value = true
   try {
-    const response = await fetch('http://localhost:8080/product/get_manager_product', {
+    const response = await fetch(`${apiUrl}/product/get_manager_product`, {
       credentials: 'include'
     })
     products.value = await response.json()
@@ -141,9 +145,11 @@ async function loadProducts() {
 }
 
 async function loadOrders() {
+    const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
   ordersLoading.value = true
   try {
-    const response = await fetch('http://localhost:8080/order/OrdersOfSeller', {
+    const response = await fetch(`${apiUrl}/order/OrdersOfSeller`, {
       credentials: 'include'
     })
     orders.value = await response.json()
@@ -186,6 +192,8 @@ async function uploadImages(event: Event) {
 }
 
 async function submitProduct() {
+    const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
   if (!validateForm()) return
 
   try {
@@ -200,7 +208,7 @@ async function submitProduct() {
       images: form.images.map(img => ({ path: img.path }))  // только массив images
     }
 
-    const response = await fetch('http://localhost:8080/product/create', {
+    const response = await fetch(`${apiUrl}/product/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(requestBody),
@@ -254,8 +262,10 @@ function removeImage(index: number) {
 
 
 async function deleteProduct(id: number) {
+    const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
   if (confirm('Удалить товар?')) {
-    await fetch(`http://localhost:8080/product/delete/${id}`, {
+    await fetch(`${apiUrl}/product/delete/${id}`, {
       method: 'DELETE',
       credentials: 'include'
     })
@@ -275,6 +285,8 @@ function startEdit(product: Product) {
 }
 
 async function updateProduct() {
+    const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
   if (!editingProduct.value) return
 
   try {
@@ -288,7 +300,7 @@ async function updateProduct() {
       category: editForm.category
     }
 
-    const response = await fetch(`http://localhost:8080/product/update/${editingProduct.value.id}`, {
+    const response = await fetch(`${apiUrl}/product/update/${editingProduct.value.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(requestBody),
@@ -315,8 +327,10 @@ const filteredOrders = computed(() => {
   })
 })
 async function updateOrderStatus(orderId, newStatus) {
+    const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
   try {
-    const res = await fetch(`http://localhost:8080/order/orders/${orderId}?status=${newStatus}`, {
+    const res = await fetch(`${apiUrl}/order/orders/${orderId}?status=${newStatus}`, {
       method: 'PUT', // Оставляем PUT, если сервер требует этот метод
       credentials: 'include',
     })
@@ -344,9 +358,11 @@ function openOrderDetails(order: Order) {
 }
 
 async function confirmDeleteOrder(id: number) {
+    const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
   if (confirm('Удалить заказ?')) {
     try {
-      await fetch(`http://localhost:8080/order/orders/${id}`, {
+      await fetch(`${apiUrl}/order/orders/${id}`, {
         method: 'DELETE',
         credentials: 'include'
       })

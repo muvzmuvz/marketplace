@@ -22,9 +22,11 @@ const itemsPerPage = ref<number>(120); // Количество товаров н
 
 // Функция для загрузки товаров
 const fetchProducts = async () => {
+    const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
   try {
     isLoading.value = true;
-    const response = await fetch('http://localhost:8080/product/top_product');
+    const response = await fetch(`${apiUrl}/product/top_product`);
     const data = await response.json();
 
     // Присваиваем все товары в массив

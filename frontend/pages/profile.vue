@@ -36,8 +36,10 @@ const getStatusClass = (status) => {
 
 
 const fetchProfile = async () => {
+    const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
     try {
-        const response = await fetch('http://localhost:8080/user/user', {
+        const response = await fetch(`${apiUrl}/user/user`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include'
@@ -47,7 +49,7 @@ const fetchProfile = async () => {
 
         user.value = await response.json()
 
-        const ordersResponse = await fetch('http://localhost:8080/order/orders', {
+        const ordersResponse = await fetch(`${apiUrl}/order/orders`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include'
@@ -74,8 +76,10 @@ onMounted(() => {
 })
 
 const logout = async () => {
+    const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
     try {
-        await fetch('http://localhost:8080/authuser/logout', {
+        await fetch(`${apiUrl}/authuser/logout`, {
             method: 'POST',
             credentials: 'include',
         })

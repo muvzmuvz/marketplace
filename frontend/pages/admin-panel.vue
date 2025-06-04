@@ -466,7 +466,8 @@ function openCreateUserModal() {
   }
   createUserDialog.value = true
 }
-
+  const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
 // ➕ Создание пользователя
 async function createUser() {
   try {
@@ -474,7 +475,7 @@ async function createUser() {
     let body = {}
 
     if (newUser.value.role === 'user') {
-      url = 'http://localhost:8080/authuser/reg'
+      url = `${apiUrl}/authuser/reg`
       body = {
         name: newUser.value.name,
         email: newUser.value.email,
@@ -482,7 +483,7 @@ async function createUser() {
         role: 1
       }
     } else {
-      url = 'http://localhost:8080/authuser/reg'
+      url = `${apiUrl}/authuser/reg`
       body = {
         name: newUser.value.name,
         email: newUser.value.email,
@@ -521,7 +522,7 @@ const isAdmin = computed(() => {
 
 const fetchUserData = async () => {
   try {
-    const response = await fetch('http://localhost:8080/user/user', {
+    const response = await fetch('${apiUrl}/user/user', {
       method: 'GET',
       credentials: 'include'
     })
@@ -602,7 +603,7 @@ async function loadUsers() {
   usersLoading.value = true
   usersError.value = null
   try {
-    const res = await fetch('http://localhost:8080/user/users', {
+    const res = await fetch('${apiUrl}/user/users', {
       method: 'GET',
       credentials: 'include',
       headers: { 'Accept': '*/*' }
@@ -624,7 +625,7 @@ function viewUserDetails(user) {
 async function confirmDeleteUser(id) {
   if (!confirm('Удалить пользователя?')) return
   try {
-    const res = await fetch(`http://localhost:8080/user/del/${id}`, {
+    const res = await fetch(`${apiUrl}/user/del/${id}`, {
       credentials: 'include',
       method: 'DELETE',
     })
@@ -641,7 +642,7 @@ async function loadProducts() {
   productsLoading.value = true
   productsError.value = null
   try {
-    const res = await fetch('http://localhost:8080/product/top_product')
+    const res = await fetch('${apiUrl}/product/top_product')
     if (!res.ok) throw new Error('Ошибка сети')
     products.value = await res.json()
   } catch (e) {
@@ -667,7 +668,7 @@ function cancelEdit() {
 
 async function updateProduct() {
   try {
-    const res = await fetch(`http://localhost:8080/product/update/${editForm.id}`, {
+    const res = await fetch(`${apiUrl}/product/update/${editForm.id}`, {
       credentials: 'include',
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -691,7 +692,7 @@ async function updateProduct() {
 async function confirmDeleteProduct(id) {
   if (!confirm('Удалить товар?')) return
   try {
-    const res = await fetch(`http://localhost:8080/product/delete/${id}`, {
+    const res = await fetch(`${apiUrl}/product/delete/${id}`, {
       credentials: 'include',
       method: 'DELETE',
     })
@@ -708,7 +709,7 @@ async function loadOrders() {
   ordersLoading.value = true
   ordersError.value = null
   try {
-    const res = await fetch('http://localhost:8080/order/orders', {
+    const res = await fetch('${apiUrl}/order/orders', {
       method: 'GET',
       credentials: 'include',
     })
@@ -735,7 +736,7 @@ function openOrderDetails(order) {
 async function confirmDeleteOrder(id) {
   if (!confirm('Удалить заказ?')) return
   try {
-    const res = await fetch(`http://localhost:8080/order/orders/${id}`, {
+    const res = await fetch(`${apiUrl}/order/orders/${id}`, {
       credentials: 'include',
       method: 'DELETE',
     })
@@ -748,8 +749,9 @@ async function confirmDeleteOrder(id) {
 }
 
 async function updateOrderStatus(orderId, newStatus) {
+  
   try {
-    const res = await fetch(`http://localhost:8080/order/orders/${orderId}?status=${newStatus}`, {
+    const res = await fetch(`${apiUrl}/order/orders/${orderId}?status=${newStatus}`, {
       method: 'PUT', // или 'GET', если сервер этого требует
       credentials: 'include',
     })
@@ -775,7 +777,7 @@ async function loadReviews() {
   reviewsLoading.value = true
   reviewsError.value = null
   try {
-    const res = await fetch('http://localhost:8080/review/reviews', {
+    const res = await fetch(`${apiUrl}/review/reviews`, {
       credentials: 'include' // Добавляем передачу куки
     })
     if (!res.ok) throw new Error('Ошибка сети')
@@ -794,7 +796,7 @@ function editReview(review) {
 async function confirmDeleteReview(id) {
   if (!confirm('Удалить отзыв?')) return
   try {
-    const res = await fetch(`http://localhost:8080/review/delete_review/${id}`, {
+    const res = await fetch(`${apiUrl}/review/delete_review/${id}`, {
       credentials: 'include',
       method: 'DELETE',
     })

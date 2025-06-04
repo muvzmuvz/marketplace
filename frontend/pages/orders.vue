@@ -8,8 +8,10 @@ const orders = ref([])
 const isLoading = ref(true)
 
 const fetchOrders = async () => {
+      const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
     try {
-        const response = await fetch('http://localhost:8080/order/orders', {
+        const response = await fetch(`${apiUrl}/order/orders`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include'

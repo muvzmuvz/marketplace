@@ -2,10 +2,13 @@
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
+
   modules: ['@nuxtjs/tailwindcss', 'shadcn-nuxt'],
+
   routeRules: {
-    '/uploads/**': { static: true } // Раздаем файлы из uploads как статику
+    '/uploads/**': { static: true }
   },
+
   shadcn: {
     /**
      * Prefix for all the imported component
@@ -16,5 +19,13 @@ export default defineNuxtConfig({
      * @default "./components/ui"
      */
     componentDir: './components/ui'
+  },
+
+ 
+  runtimeConfig: {
+    public: {
+
+      apiBaseUrl: process.env.API_BASE_URL || 'http://localhost:3000/api'
+    }
   }
 })
