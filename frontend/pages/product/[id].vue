@@ -157,7 +157,8 @@ import {
   ShoppingCartIcon,
   CheckIcon
 } from 'lucide-vue-next'
-
+    const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
 const route = useRoute()
 const router = useRouter()
 const productId = route.params.id

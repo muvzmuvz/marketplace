@@ -21,6 +21,9 @@ const getStatusText = (status) => {
   }
 }
 
+      const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
+
 const getStatusClass = (status) => {
   switch (status) {
     case 0:
