@@ -11,12 +11,13 @@ const form = ref({
   password: '',
   code: ''
 })
-
+    const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
 
 
 const login = async () => {
   try {
-    const response = await fetch('http://localhost:8080/api/admin/auth/login', {
+    const response = await fetch(`${apiUrl}/admin/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form.value),

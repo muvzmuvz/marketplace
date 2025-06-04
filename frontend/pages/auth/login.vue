@@ -10,12 +10,13 @@ const form = ref({
   email: '',
   hashPassword: ''
 })
-
+    const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
 
 
 const login = async () => {
   try {
-    const response = await fetch('http://localhost:8080/authuser/log', {
+    const response = await fetch(`${apiUrl}/authuser/log`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form.value),
@@ -37,7 +38,7 @@ const login = async () => {
 
   // Пробуем войти как продавец, если первый запрос не удался
   try {
-    const responseSeller = await fetch('http://localhost:8080/authseller/login', {
+    const responseSeller = await fetch(`${apiUrl}/authseller/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form.value),
