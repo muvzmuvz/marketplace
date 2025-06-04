@@ -15,7 +15,8 @@ import {
 } from '@/components/ui/select'
 
 
-
+    const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
 
 
 const form = ref({
@@ -39,7 +40,7 @@ const register = async () => {
       role: Number(form.value.role)
     };
 
-    const response = await fetch('http://localhost:8080/authuser/reg', {
+    const response = await fetch(`${apiUrl}/authuser/reg`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
