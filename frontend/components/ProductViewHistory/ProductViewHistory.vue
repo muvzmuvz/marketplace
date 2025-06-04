@@ -83,7 +83,7 @@ export default {
   methods: {
     async fetchHistory() {
   try {
-    const response = await fetch('http://localhost:8080/ProductViewHistory/history', {
+    const response = await fetch(`${apiUrl}/ProductViewHistory/history`, {
       credentials: 'include'
     });
 
@@ -119,7 +119,7 @@ export default {
       if (!confirm('Удалить товар из истории?')) return;
 
       try {
-        await fetch(`http://localhost:8080/ProductViewHistory/${productId}`, {
+        await fetch(`${apiUrl}/ProductViewHistory/${productId}`, {
           method: 'DELETE',
           credentials: 'include'
         });
@@ -132,7 +132,7 @@ export default {
       if (!confirm('Очистить всю историю просмотров?')) return;
 
       try {
-        await fetch('http://localhost:8080/ProductViewHistory/allhistory', {
+        await fetch(`${apiUrl}/ProductViewHistory/allhistory`, {
           method: 'DELETE',
           credentials: 'include'
         });

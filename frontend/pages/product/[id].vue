@@ -190,7 +190,7 @@ const body = {
   characteristic: product.characteristic || '',
   images: product.images || []
 };
-    const response = await fetch(`http://localhost:8080/ProductViewHistory/add_history/${product.id}`, {
+    const response = await fetch(`${apiUrl}/ProductViewHistory/add_history/${product.id}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -208,7 +208,7 @@ const body = {
 
 const fetchProduct = async () => {
   try {
-    const response = await fetch(`http://localhost:8080/product/product/${productId}`)
+    const response = await fetch(`${apiUrl}/product/product/${productId}`)
     if (!response.ok) throw new Error('Товар не найден')
     const data = await response.json()
     product.value = {
@@ -223,7 +223,7 @@ const fetchProduct = async () => {
 }
 const fetchUser = async () => {
   try {
-    const response = await fetch('http://localhost:8080/user/user', {
+    const response = await fetch(`${apiUrl}/user/user`, {
       credentials: 'include'
     })
     if (!response.ok) throw new Error('Ошибка загрузки пользователя')
@@ -237,7 +237,7 @@ const fetchUser = async () => {
 
 const fetchComments = async () => {
   try {
-    const response = await fetch(`http://localhost:8080/review/reviews_product/${productId}`)
+    const response = await fetch(`${apiUrl}/review/reviews_product/${productId}`)
     if (!response.ok) throw new Error('Ошибка загрузки отзывов')
     comments.value = await response.json()
   } catch (error) {
@@ -267,7 +267,7 @@ const postComment = async () => {
       userId: userId.value
     }
 
-    const response = await fetch('http://localhost:8080/review/create_review', {
+    const response = await fetch(`${apiUrl}/review/create_review`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -296,7 +296,7 @@ const postComment = async () => {
 const addToCart = async () => {
   try {
     const response = await fetch(
-      `http://localhost:8080/cart/add_pdouct_cart/${productId}`,
+      `${apiUrl}/cart/add_pdouct_cart/${productId}`,
       {
         method: 'POST',
         credentials: 'include'
