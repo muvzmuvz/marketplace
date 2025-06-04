@@ -293,6 +293,9 @@ const postComment = async () => {
 }
 
 
+  const apiImgUrl = config.public.apiImageUrl
+
+
 
 const addToCart = async () => {
   try {
@@ -319,7 +322,7 @@ const addToCart = async () => {
 
 const getImageUrl = (path) => {
   if (path.startsWith('http')) return path
-  return `http://localhost:3000/${path}`
+  return `${apiImgUrl}/${path}`
 }
 
 
