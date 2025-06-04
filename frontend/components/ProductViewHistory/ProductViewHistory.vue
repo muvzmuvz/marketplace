@@ -62,7 +62,8 @@
 
 <script>
 import '@/assets/css/productPage.css'
-
+    const config = useRuntimeConfig() 
+  const apiUrl = config.public.apiBaseUrl
 export default {
   props: {
     currentProductId: {

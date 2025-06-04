@@ -123,7 +123,8 @@ onMounted(() => {
 })
 
 
-
+  const config = useRuntimeConfig() 
+  const apiImgUrl = config.public.apiImageUrl
 
 
 
@@ -172,7 +173,7 @@ async function uploadImages(event: Event) {
       const formData = new FormData()
       formData.append('file', file)
 
-      const response = await fetch('/api/upload', {
+      const response = await fetch(`${apiImgUrl}/api/upload`, {
         method: 'POST',
         body: formData
       })
