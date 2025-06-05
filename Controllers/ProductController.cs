@@ -239,7 +239,6 @@ public class ProductController : ControllerBase
 
     [HttpGet]
     [Route("{seller}/{sellerId}")]
-    [Authorize(Roles = "User, Admin, Seller")]
     public async Task<IActionResult> GetManagerByProducts(string seller, int sellerId)
     {
         try
