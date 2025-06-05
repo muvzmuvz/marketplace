@@ -37,12 +37,16 @@ public class ProductRepository : IProductRepository
 
     public async Task<List<Product>> GetAllAsync()
     {
-        return await _context.Products.Include(image => image.Images).ToListAsync();
+        return await _context.Products
+             .Include(user => user.User)
+            .Include(image => image.Images)
+            .ToListAsync();
     }
 
     public async Task<Product> GetByIdAsync(int id)
     {
         var product = await _context.Products
+            .Include(user => user.User)
             .Include(p => p.Images)
             .FirstOrDefaultAsync(p => p.Id == id);
         if (product == null)
@@ -58,6 +62,7 @@ public class ProductRepository : IProductRepository
     public async Task<ICollection<Product>> GetByName(string name)
     {
         var products = await _context.Products
+        .Include(user => user.User)
         .Include(image => image.Images)
         .ToListAsync();
 
@@ -94,6 +99,7 @@ public class ProductRepository : IProductRepository
     public async Task<List<Product>> GetProductByManagerIdAsync(int managerId)
     {
         var products = await _context.Products
+            .Include(user => user.User)
             .Include(image => image.Images)
             .Where(p => p.UserId == managerId)
             .ToListAsync();
@@ -105,7 +111,9 @@ public class ProductRepository : IProductRepository
     {
         int lengthPage = 10;
         int skip = (id - 1) * lengthPage;
-        var page = await _context.Products.Include(image => image.Images)
+        var page = await _context.Products
+            .Include(user => user.User)
+            .Include(image => image.Images)
             .Skip(skip)
             .Take(lengthPage)
             .ToListAsync();
@@ -144,6 +152,5 @@ public class ProductRepository : IProductRepository
         await _context.SaveChangesAsync();
 
         return newProduct;
-
-    }
+    }  
 }

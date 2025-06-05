@@ -36,6 +36,7 @@ public class ReviewRepository : IReviewRepository
     public async Task<List<Review>> GetAllProductReviewsAsync(int productId)
     {
         var reviews = await _appDbContext.Reviews
+            .Include(user => user.User)
             .Where(rew => rew.ProductId == productId)
             .OrderBy(date => date.DateCreated)
             .ToListAsync();
@@ -45,7 +46,8 @@ public class ReviewRepository : IReviewRepository
 
     public async Task<List<Review>> GetAllReviews()
     {
-        var reviews = await _appDbContext.Reviews.ToListAsync();
+        var reviews = await _appDbContext.Reviews
+            .Include(user => user.User).ToListAsync();
 
         return reviews;
     }
@@ -54,6 +56,7 @@ public class ReviewRepository : IReviewRepository
     {
         var reviews = await _appDbContext.Reviews
             .Where(rew => rew.UserId == userId)
+            .Include(user => user.User)
             .OrderByDescending(date => date.DateCreated)
             .ToListAsync();
 

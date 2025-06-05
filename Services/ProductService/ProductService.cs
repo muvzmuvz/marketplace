@@ -3,9 +3,6 @@ using marketplace_api.Repository.ProductRepository;
 using marketplace_api.Services.UserService;
 using marketplace_api.CustomExeption;
 using Microsoft.AspNetCore.JsonPatch;
-using marketplace_api.Services.RedisService;
-using System.Text.Json;
-using marketplace_api.Repository.ProductViewHistoryRepository;
 using Microsoft.IdentityModel.Tokens;
 
 namespace marketplace_api.Services.ProductService;
@@ -14,16 +11,13 @@ public class ProductService : IProductService
 {
     private readonly IProductRepository _productRepository;
     private readonly IUserService _userService;
-    private readonly IProductViewHistoryRepository _productViewHistoryRepository;
 
     public ProductService(
         IProductRepository productRepository,
-        IUserService userService,
-        IProductViewHistoryRepository productViewHistoryRepository)
+        IUserService userService)
     {
         _productRepository = productRepository;
         _userService = userService;
-        _productViewHistoryRepository = productViewHistoryRepository;
     }
 
     public async Task<Product> CreateProductAsync(Product product, int sellerId)
@@ -36,6 +30,7 @@ public class ProductService : IProductService
         var seller = await _userService.GetByIndexUserAsync(sellerId);
 
         product.UserId = sellerId;
+        product.User = seller;
 
         var result = await _productRepository.CreateAsync(product);
 
@@ -63,9 +58,9 @@ public class ProductService : IProductService
         return await _productRepository.GetAllAsync();
     }
 
-    public Task<List<Product>> GetManagerProducts(int managerId)
+    public async Task<List<Product>> GetManagerProducts(int managerId)
     {
-        var products = _productRepository.GetProductByManagerIdAsync(managerId);
+        var products = await _productRepository.GetProductByManagerIdAsync(managerId);
 
         return products;
     }

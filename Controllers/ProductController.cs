@@ -236,4 +236,22 @@ public class ProductController : ControllerBase
             return StatusCode(500, ex.Message);
         }
     }
+
+    [HttpGet]
+    [Route("{seller}/{sellerId}")]
+    [Authorize(Roles = "User, Admin, Seller")]
+    public async Task<IActionResult> GetManagerByProducts(string seller, int sellerId)
+    {
+        try
+        {   
+            var products = await _productService.GetManagerProducts(sellerId);
+
+            return Ok(_mapper.Map<List<ProductDto>>(products));
+
+        }
+        catch (NotFoundExeption ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
+    }
 }

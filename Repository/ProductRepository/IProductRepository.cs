@@ -14,5 +14,4 @@ public interface IProductRepository
     public Task<ICollection<Product>> GetByName(string name);
     public Task<List<Product>> GetProductOdPage(int id);
     public Task<List<Product>> GetProductByManagerIdAsync(int managerId);
-    
 }

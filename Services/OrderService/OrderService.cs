@@ -59,7 +59,7 @@ public class OrderService : IOrderService
                 };
 
                 productDb.CountProduct -= orderProduct.Quantity;
-                if (productDb.CountProduct <= 0)
+                if (productDb.CountProduct < 0)
                 {
                     throw new Exception("Слишком много продуктов вы хотитие купить столько нет на складе");
                 }
