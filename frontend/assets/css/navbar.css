@@ -225,8 +225,6 @@ header {
 	width: 100%;
 	bottom: 0;
 	left: 0;
-
-	padding-bottom: 20px;
 	grid-template-columns: 25% 25% 25% 25%;
 	grid-template-rows: none;
 	background-color: #ffffff;
