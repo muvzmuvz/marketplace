@@ -712,8 +712,7 @@ function cancelEdit() {
                         <img v-if="item.product.images[0].path.length" :src="item.product.images[0].path"
                           class="w-12 h-12 rounded object-cover" />
                         <div>
-                          <div class=" ">{{ item.product.name }}</div>
-                          <div class="text-sm text-gray-500 elipse">{{ item.product.description }}</div>
+                          <div class="truncate max-w-[150px]">{{ item.product.name }}</div>
                         </div>
 
                       </div>

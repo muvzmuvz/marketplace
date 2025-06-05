@@ -18,7 +18,7 @@ const products = ref<Product[]>([]); // Массив всех товаров
 const displayedProducts = ref<Product[]>([]); // Товары, которые отображаются на текущей странице
 const isLoading = ref<boolean>(true); // Состояние загрузки
 const currentPage = ref<number>(1); // Текущая страница
-const itemsPerPage = ref<number>(120); // Количество товаров на странице
+const itemsPerPage = ref<number>(20); // Количество товаров на странице
 
 // Функция для загрузки товаров
 const fetchProducts = async () => {
