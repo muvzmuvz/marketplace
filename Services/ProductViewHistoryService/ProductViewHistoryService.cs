@@ -18,13 +18,9 @@ public class ProductViewHistoryService : IProductViewHistoryService
         _productService = productService;
     }
 
-    public async Task AddHistoryAsync(Product product, int userId)
+    public async Task AddHistoryAsync(int productId, int userId)
     {
-        if (product == null)
-        {
-            throw new ArgumentNullException();
-        }
-        var productDb = await _productService.GetProductAsync(product.Id);
+        var productDb = await _productService.GetProductAsync(productId);
 
         await _productViewHistoryRepository.AddProducthistory(userId, productDb);
     }

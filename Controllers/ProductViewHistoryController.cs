@@ -55,17 +55,13 @@ public class ProductViewHistoryController : ControllerBase
     [HttpPost]
     [Route("add_history/{productId}")]
     [Authorize(Roles = "Admin,User,Seller")]
-    public async Task<IActionResult> AddProductHistoryAsync(ProductDto productDto,int productId)
+    public async Task<IActionResult> AddProductHistoryAsync(int productId)
     {
         try
         { 
-
-            var product = _mapper.Map<Product>(productDto);
-            product.Id = productId;
-
             var userId = _jwtService.GetIdUser(HttpContext);
 
-            await _productViewHistoryService.AddHistoryAsync(product, userId);
+            await _productViewHistoryService.AddHistoryAsync(productId, userId);
 
             return Ok();
         }

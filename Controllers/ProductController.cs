@@ -82,7 +82,7 @@ public class ProductController : ControllerBase
             {
                 var userId = _jwtService.GetIdUser(HttpContext);
 
-                BackgroundJob.Enqueue(() => _productViewHistoryService.AddHistoryAsync(product,userId));
+                BackgroundJob.Enqueue(() => _productViewHistoryService.AddHistoryAsync(product.Id,userId));
             }
 
             return Ok(_mapper.Map<ProductDto>(product));
