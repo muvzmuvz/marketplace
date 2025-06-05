@@ -25,8 +25,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
 
-      apiBaseUrl: '/api', 
-      apiImageUrl: '/'
+      apiBaseUrl: 'http://localhost:8080', 
+      apiImageUrl: 'http://localhost:3000'
     }
   }
 })

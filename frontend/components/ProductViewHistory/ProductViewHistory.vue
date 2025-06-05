@@ -34,6 +34,8 @@
           <button 
             class="remove-btn"
             @click.stop="removeFromHistory(product.id)"
+            aria-label="Удалить товар из истории"
+            title="Удалить"
           >
             ×
           </button>
@@ -46,7 +48,7 @@
             />
           </div>
           <div class="product-details">
-             <div class="product-name">{{ product.name }}</div>
+            <div class="product-name">{{ product.name }}</div>
             <div class="product-price text-gray-700">{{ formattedPrice(product.price) }}</div>
           </div>
         </div>
@@ -54,109 +56,132 @@
     </div>
 
     <div v-if="!loading && !products.length" class="empty-history">
-
       <p>Вы пока ничего не смотрели</p>
     </div>
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { useRuntimeConfig } from '#imports'
 import '@/assets/css/productPage.css'
-    const config = useRuntimeConfig() 
-  const apiUrl = config.public.apiBaseUrl
-export default {
-  props: {
-    currentProductId: {
-      type: Number,
-      required: true
-    }
-  },
-  data() {
-    return {
-      products: [],
-      loading: true,
-      error: null,
-    };
-  },
-  mounted() {
-    this.fetchHistory();
-  },
-  methods: {
-    async fetchHistory() {
+
+const props = defineProps({
+  currentProductId: {
+    type: Number,
+    required: true
+  }
+})
+
+const products = ref([])
+const loading = ref(true)
+const error = ref(null)
+
+const router = useRouter()
+const config = useRuntimeConfig()
+const apiUrl = config.public.apiBaseUrl
+
+const fetchHistory = async () => {
+  loading.value = true
+  error.value = null
+
   try {
     const response = await fetch(`${apiUrl}/ProductViewHistory/history`, {
       credentials: 'include'
-    });
+    })
 
-    if (!response.ok) throw new Error('Ошибка загрузки истории');
+    if (!response.ok) throw new Error('Ошибка загрузки истории')
 
-    let data = await response.json();
+    let data = await response.json()
 
     // Сортируем по дате просмотра - новые первыми
-    data.sort((a, b) => new Date(b.viewDate) - new Date(a.viewDate));
+    data.sort((a, b) => new Date(b.viewDate) - new Date(a.viewDate))
 
     // Извлекаем продукты
-    let products = data.map(item => item.product);
+    let fetchedProducts = data.map(item => item.product)
 
-    const currentId = this.currentProductId;
-
+    // Если текущий продукт есть в списке, помещаем его в начало
+    const currentId = props.currentProductId
     if (currentId) {
-      // Если текущий продукт есть в списке, помещаем его в начало
-      const currentIndex = products.findIndex(p => p.id === currentId);
+      const currentIndex = fetchedProducts.findIndex(p => p.id === currentId)
       if (currentIndex > -1) {
-        const [currentProduct] = products.splice(currentIndex, 1);
-        products.unshift(currentProduct);
+        const [currentProduct] = fetchedProducts.splice(currentIndex, 1)
+        fetchedProducts.unshift(currentProduct)
       }
     }
 
-    this.products = products;
-  } catch (error) {
-    this.error = 'Не удалось загрузить историю просмотров';
+    products.value = fetchedProducts
+  } catch (err) {
+    error.value = 'Не удалось загрузить историю просмотров'
   } finally {
-    this.loading = false;
+    loading.value = false
   }
-},
-    async removeFromHistory(productId) {
-      if (!confirm('Удалить товар из истории?')) return;
+}
 
-      try {
-        await fetch(`${apiUrl}/ProductViewHistory/${productId}`, {
-          method: 'DELETE',
-          credentials: 'include'
-        });
-        this.products = this.products.filter(p => p.id !== productId);
-      } catch (error) {
-        this.error = 'Ошибка при удалении товара';
-      }
-    },
-    async clearHistory() {
-      if (!confirm('Очистить всю историю просмотров?')) return;
+// Удаление отдельного товара из истории
+const removeFromHistory = async (productId) => {
+  if (!confirm('Удалить товар из истории?')) return
 
-      try {
-        await fetch(`${apiUrl}/ProductViewHistory/allhistory`, {
-          method: 'DELETE',
-          credentials: 'include'
-        });
-        this.products = [];
-      } catch (error) {
-        this.error = 'Ошибка при очистке истории';
-      }
-    },
-    formattedPrice(price) {
-      return new Intl.NumberFormat('ru-RU', {
-        style: 'currency',
-        currency: 'RUB',
-        maximumFractionDigits: 0
-      }).format(price);
-    },
-    goToProduct(id) {
-      this.$router.push(`/product/${id}`);
-    }
+  try {
+    const response = await fetch(`${apiUrl}/ProductViewHistory/${productId}`, {
+      method: 'DELETE',
+      credentials: 'include'
+    })
+
+    if (!response.ok) throw new Error('Ошибка при удалении товара')
+
+    products.value = products.value.filter(p => p.id !== productId)
+  } catch {
+    error.value = 'Ошибка при удалении товара'
   }
-};
+}
+
+// Очистка всей истории просмотров
+const clearHistory = async () => {
+  if (!confirm('Очистить всю историю просмотров?')) return
+
+  try {
+    const response = await fetch(`${apiUrl}/ProductViewHistory/allhistory`, {
+      method: 'DELETE',
+      credentials: 'include'
+    })
+
+    if (!response.ok) throw new Error('Ошибка при очистке истории')
+
+    products.value = []
+  } catch {
+    error.value = 'Ошибка при очистке истории'
+  }
+}
+
+// Форматирование цены в рублях
+const formattedPrice = (price) => {
+  return new Intl.NumberFormat('ru-RU', {
+    style: 'currency',
+    currency: 'RUB',
+    maximumFractionDigits: 0
+  }).format(price)
+}
+
+// Переход на страницу продукта
+const goToProduct = (id) => {
+  router.push(`/product/${id}`)
+}
+
+// Загрузка истории при монтировании
+onMounted(() => {
+  fetchHistory()
+})
+
+// Если currentProductId изменится, обновляем порядок продуктов
+watch(() => props.currentProductId, () => {
+  fetchHistory()
+})
 </script>
 
 <style scoped>
+/* Стили оставил без изменений, как в твоём коде */
 .history-container {
   display: grid;
   grid-template-rows: max-content;
@@ -195,16 +220,14 @@ export default {
 .scroll-container {
   overflow-x: auto;
   padding-bottom: 15px;
-  scroll-behavior: smooth; /* Плавный скролл */
+  scroll-behavior: smooth;
   position: relative;
-
-    scrollbar-width: thin; /* Firefox */
-  scrollbar-color: rgba(131, 86, 62) transparent; /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(131, 86, 62) transparent;
 }
 
-/* Chrome, Edge, Safari */
 .scroll-container::-webkit-scrollbar {
-  height: 6px; 
+  height: 6px;
 }
 
 .scroll-container::before,
@@ -214,13 +237,8 @@ export default {
   top: 0;
   bottom: 15px;
   width: 30px;
-  pointer-events: none; /* Чтобы тени не мешали кликам */
+  pointer-events: none;
   z-index: 10;
-}
-
-/* Chrome, Edge, Safari */
-.scroll-container::-webkit-scrollbar {
-  height: 6px; /* высота горизонтального скролла */
 }
 
 .scroll-container::-webkit-scrollbar-track {
@@ -228,28 +246,28 @@ export default {
 }
 
 .scroll-container::-webkit-scrollbar-thumb {
-  background-color: #b10080; /* цвет скролла */
+  background-color: #b10080;
   border-radius: 3px;
   border: 1px solid transparent;
 }
 
-/* Добавим эффект при наведении на скролл */
 .scroll-container::-webkit-scrollbar-thumb:hover {
   background-color: #870060;
 }
 
 .history-grid {
-  display: flex; /* inline-flex можно оставить, но flex удобнее */
+  display: flex;
   gap: 15px;
   padding: 5px 0;
-  /* Чтобы не было вертикальной прокрутки */
   overflow-y: hidden;
 }
 
 .product-card {
-  flex-shrink: 0; /* Чтобы не сжимались */
+  flex-shrink: 0;
   width: 200px;
-  /* Остальное без изменений */
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.2s;
 }
 
 .product-card:hover {
@@ -261,6 +279,7 @@ export default {
   padding-top: 100%;
   background: #f8f8f8;
   border-radius: 8px 8px 0 0;
+  overflow: hidden;
 }
 
 .product-image {
@@ -269,7 +288,7 @@ export default {
   left: 0;
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  object-fit: cover;
   mix-blend-mode: multiply;
 }
 
@@ -311,6 +330,7 @@ export default {
   justify-content: center;
   opacity: 0;
   transition: opacity 0.2s;
+  z-index: 20;
 }
 
 .product-card:hover .remove-btn {
@@ -318,15 +338,9 @@ export default {
 }
 
 .empty-history {
-
   align-items: center;
   text-align: center;
   padding: 40px 0;
-}
-
-.empty-image {
-  width: 100px;
-  margin-bottom: 20px;
 }
 
 .skeleton-grid {

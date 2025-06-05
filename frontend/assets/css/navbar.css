@@ -1,13 +1,15 @@
 @import '@/assets/css/main.css';
 
 :root {
-	--icon-delivery: url('@/assets/img/icon-delivery.svg');
+	--icon-delivery: url('@/assets/img/delivery.png');
 	--icon-favorite: url('@/assets/img/icon-favorite.svg');
-	--icon-profile: url('@/assets/img/icon-profile.svg');
-	--icon-cart: url('@/assets/img/icon-cart.svg');
+	--icon-profile: url('@/assets/img/profile.png');
+	--icon-cart: url('@/assets/img/cart.png');
 	--icon-home: url('@/assets/img/icon-home.svg');
 	--icon-cat: url('@/assets/img/icon-cat.svg');
 	--icon-delivery-mob: url('@/assets/img/delivery-mob.png');
+	--icon-profile-mob: url('@/assets/img/icon-profile.svg');
+	--icon-cart-mob: url('@/assets/img/icon-cart.svg');
 }
 
 header {
@@ -34,12 +36,29 @@ header {
 	}
 }
 
+.nav--logo {
+	display: flex;
+	max-width: 300px;
+	@media (max-width: 1200px) {
+		max-width: 200px;
+		
+	}
+}
+
 .logo {
-	color: white;
-	font-size: 3rem;
+	display: flex;
+	align-items: center;
 	@media (max-width: 1023px) {
 		display: none;
 	}
+	max-width: 70%;
+
+}
+
+.logo-img{
+	max-width: 100%;
+	height: 100px;
+	object-fit: fill;
 }
 
 .nav--search {
@@ -68,14 +87,14 @@ header {
 	align-items: center;
 	justify-content: space-between;
 	gap: 30px;
-	color: white;
+	color: #804000;
 	@media (max-width: 1023px) {
 		display: none;
 	}
 }
 .nav--pc_link {
 	cursor: pointer;
-	color: rgb(255, 255, 255);
+	color: #804000;
 	cursor: pointer;
 	font-size: 14px;
 	line-height: 20px;
@@ -87,29 +106,30 @@ header {
 .nav--pc_icon {
 	background-position: 50%;
 	background-repeat: no-repeat;
-	width: 24px;
-	height: 24px;
+	width: 60px;
+	height: 60px;
 	margin: 0 auto 6px;
 	display: block;
 }
 
 .nav--pc_icon__delivery {
 	position: relative;
+	
 }
 .nav--pc_icon__delivery::before {
 	content: '';
 	width: 100%;
 	height: 100%;
 	-webkit-mask-position: 50%;
+	mask-size: contain;
 	mask-position: 50%;
-	-webkit-mask-size: auto;
-	mask-size: auto;
+	-webkit-mask-size: contain;
 	-webkit-mask-repeat: no-repeat;
 	mask-repeat: no-repeat;
 	-webkit-mask-image: var(--icon-delivery);
 	-webkit-mask-image: var(--icon-delivery);
 	mask-image: var(--icon-delivery);
-	background-color: #ffffff;
+	background-color: #804000;
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -153,14 +173,14 @@ header {
 	height: 100%;
 	-webkit-mask-position: 50%;
 	mask-position: 50%;
-	-webkit-mask-size: auto;
-	mask-size: auto;
+	-webkit-mask-size: contain;
+	mask-size: contain;
 	-webkit-mask-repeat: no-repeat;
 	mask-repeat: no-repeat;
 	-webkit-mask-image: var(--icon-profile);
 	-webkit-mask-image: var(--icon-profile);
 	mask-image: var(--icon-profile);
-	background-color: #ffffff;
+	background-color: #804000;
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -181,14 +201,14 @@ header {
 	height: 100%;
 	-webkit-mask-position: 50%;
 	mask-position: 50%;
-	-webkit-mask-size: auto;
-	mask-size: auto;
+	-webkit-mask-size: contain;
+	mask-size: contain;
 	-webkit-mask-repeat: no-repeat;
 	mask-repeat: no-repeat;
 	-webkit-mask-image: var(--icon-cart);
 	-webkit-mask-image: var(--icon-cart);
 	mask-image: var(--icon-cart);
-	background-color: #ffffff;
+	background-color: #804000;
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -264,4 +284,50 @@ header {
 	left: 0;
 }
 
+
+.nav--mob_icon__cart {
+	position: relative;
+}
+
+.nav--mob_icon__cart::before {
+	content: '';
+	width: 34px;
+	height: 50px;
+	-webkit-mask-position: 50%;
+	mask-position: 50%;
+	-webkit-mask-size: auto;
+	mask-size: auto;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-image: var(--icon-cart-mob);
+	-webkit-mask-image: var(--icon-cart-mob);
+	mask-image: var(--icon-cart-mob);
+	background-color: #000000;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.nav--mob_icon__profile {
+	position: relative;
+}
+
+.nav--mob_icon__profile::before {
+	content: '';
+	width: 34px;
+	height: 50px;
+	-webkit-mask-position: 50%;
+	mask-position: 50%;
+	-webkit-mask-size: auto;
+	mask-size: auto;
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-image: var(--icon-profile-mob);
+	-webkit-mask-image: var(---icon-profile-mob);
+	mask-image: var(--icon-profile-mob);
+	background-color: #000000;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
 

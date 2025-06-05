@@ -30,7 +30,7 @@ const handleKeyup = (event) => {
         <nav>
             <div class="nav--container">
                 <div class="nav--logo">
-                    <NuxtLink to="/" class="logo neon-text">WildBobr</NuxtLink>
+                    <NuxtLink to="/" class="logo neon-text"><img src="@/assets/img/logo.svg" class="logo-img" alt="WildBobr" /></NuxtLink>
                 </div>
                 <div class="nav--search">
                     <Input v-model="searchQuery" type="search" placeholder="Найти на WildBobr"
@@ -60,10 +60,10 @@ const handleKeyup = (event) => {
                     <span class="nav--pc_icon nav--mob_icon__delivery"></span>
                 </NuxtLink>
                 <NuxtLink to="/cart" class="nav--pc_link" exact-active-class="active">
-                    <span class="nav--pc_icon nav--pc_icon__cart"></span>
+                    <span class="nav--pc_icon nav--mob_icon__cart"></span>
                 </NuxtLink>
                 <NuxtLink to="/profile" class="nav--pc_link" exact-active-class="active">
-                    <span class="nav--pc_icon nav--pc_icon__profile"></span>
+                    <span class="nav--pc_icon nav--mob_icon__profile"></span>
                 </NuxtLink>
             </div>
         </nav>
