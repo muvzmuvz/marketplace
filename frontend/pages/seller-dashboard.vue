@@ -31,6 +31,7 @@ interface OrderProduct {
 interface Order {
   id: number
   userId: number
+  user: string
   totalPrice: number
   status: number
   dateCreated: string
@@ -477,7 +478,7 @@ function cancelEdit() {
                     <TableBody>
                       <TableRow v-for="order in filteredOrders" :key="order.id">
                         <TableCell>#{{ order.id }}</TableCell>
-                        <TableCell>{{ order.userId }}</TableCell>
+                        <TableCell>{{ order.user }}</TableCell>
                         <TableCell>
                           <div v-for="item in order.products" :key="item.productId" class="text-sm">
                             {{ item.product.name }} ×{{ item.quantity }}
