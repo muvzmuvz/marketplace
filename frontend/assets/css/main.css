@@ -1,6 +1,6 @@
 :root {
-	--caret-color: rgb(131, 86, 62);
-	--caret-hover: rgb(165, 125, 104);
+	--caret-color: rgb(231, 208, 0);
+	--caret-hover: rgb(231, 218, 101);
 	overflow-x: hidden;
 }
 
@@ -130,7 +130,7 @@
 
 .pagination button {
 	padding: 8px 12px;
-	color: #ffffff;
+	color: #804000;
 	font-size: 1rem;
 	cursor: pointer;
 	border-radius: 5px;

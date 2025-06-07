@@ -60,6 +60,11 @@
             <h2>Характеристики</h2>
             <pre class="characteristics">{{ product.characteristic }}</pre>
           </div>
+          <div class="seller">
+            <router-link :to="`/seller/${product.user.id}`" class="seller-link">
+              <p class="description">Продавец: {{ product.user.name || 'Неизвестный продавец' }}</p>
+            </router-link>
+          </div>
           <div class="actions-section">
 <Button
   :class="[
@@ -126,7 +131,7 @@
             class="review-card"
           >
             <div class="review-header">
-              <span class="user">Пользователь #{{ comment.userId }}</span>
+              <span class="user">Пользователь: {{ comment.user.name}}</span>
               <span class="date">{{ formatDate(comment.dateCreated) }}</span>
             </div>
             <div class="review-rating-stars">
@@ -176,21 +181,23 @@ const modalImage = computed(() => getImageUrl(product.value?.images?.[activeInde
 const isAdded = ref(false)
 
 const addViewHistory = async (product) => {
+  if (!userId.value) return; // не отправляем запрос, если не авторизован
+
   try {
-    // Формируем тело запроса, берем нужные поля из product
-const body = {
-  productId: product.id || 0,  // вот оно! 
-  countProduct: 0, 
-  category: product.category || 0,
-  price: product.price || 0,
-  name: product.name || '',
-  description: product.description || '',
-  userId: userId.value || 0,
-  id: product.id || 0,
-  imagePath: product.images?.[0]?.path || '',
-  characteristic: product.characteristic || '',
-  images: product.images || []
-};
+    const body = {
+      productId: product.id || 0,
+      countProduct: 0,
+      category: product.category || 0,
+      price: product.price || 0,
+      name: product.name || '',
+      description: product.description || '',
+      userId: userId.value || 0,
+      id: product.id || 0,
+      imagePath: product.images?.[0]?.path || '',
+      characteristic: product.characteristic || '',
+      images: product.images || []
+    };
+
     const response = await fetch(`${apiUrl}/ProductViewHistory/add_history/${product.id}`, {
       method: 'POST',
       headers: {
@@ -206,6 +213,7 @@ const body = {
     console.error('Не удалось добавить историю просмотра:', error);
   }
 }
+
 
 const fetchProduct = async () => {
   try {
@@ -353,14 +361,14 @@ const averageRating = computed(() => {
 })
 
 onMounted(async () => {
-  await fetchUser()
-   await fetchProduct()
+  await fetchUser();       // получаем текущего пользователя
+  await fetchProduct();    // получаем товар
 
- if (product.value) {
-    await addViewHistory(product.value);
+  if (product.value && userId.value) {
+    await addViewHistory(product.value);  // добавляем в историю только если авторизован
   }
 
-  await fetchComments()
+  await fetchComments(); // загружаем отзывы
 })
 
 
