@@ -522,7 +522,7 @@ const isAdmin = computed(() => {
 
 const fetchUserData = async () => {
   try {
-    const response = await fetch('${apiUrl}/user/user', {
+    const response = await fetch(`${apiUrl}/user/user`, {
       method: 'GET',
       credentials: 'include'
     })
@@ -603,7 +603,7 @@ async function loadUsers() {
   usersLoading.value = true
   usersError.value = null
   try {
-    const res = await fetch('${apiUrl}/user/users', {
+    const res = await fetch(`${apiUrl}/user/users`, {
       method: 'GET',
       credentials: 'include',
       headers: { 'Accept': '*/*' }
@@ -642,7 +642,7 @@ async function loadProducts() {
   productsLoading.value = true
   productsError.value = null
   try {
-    const res = await fetch('${apiUrl}/product/top_product')
+    const res = await fetch(`${apiUrl}/product/top_product`)
     if (!res.ok) throw new Error('Ошибка сети')
     products.value = await res.json()
   } catch (e) {
@@ -709,7 +709,7 @@ async function loadOrders() {
   ordersLoading.value = true
   ordersError.value = null
   try {
-    const res = await fetch('${apiUrl}/order/orders', {
+    const res = await fetch(`${apiUrl}/order/orders`, {
       method: 'GET',
       credentials: 'include',
     })
