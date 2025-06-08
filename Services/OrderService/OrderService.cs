@@ -116,9 +116,9 @@ public class OrderService : IOrderService
         await _orderRepository.UpdateOfStatusAsync(orderStatus, orderid);
     }
 
-    public async Task<List<OrderDto>> GetOrdersByDate(DateTime date)
+    public async Task<List<OrderDto>> GetOrdersByDate(DateTime startDate, DateTime endDate)
     {
-        var orders = await _orderRepository.GetOrdersByDate(date);
+        var orders = await _orderRepository.GetOrdersByDate(startDate, endDate);
 
         return _mapper.Map<List<OrderDto>>(orders.ToList());
     }

@@ -10,7 +10,7 @@ public interface IOrderService
     Task<OrderDto> GetOrderByIdAsync(int orderId);
     Task RemoveOrderFromDeliveryAsync(int orderId);
     Task OrderUpdateOfStatusAsync(OrderStatus orderStatus, int orderid);
-    Task<List<OrderDto>> GetOrdersByDate(DateTime date);
+    Task<List<OrderDto>> GetOrdersByDate(DateTime startDate, DateTime endDate);
     Task UpdateOrderAsync(OrderDto newOrder, int orderId);
     Task<List<OrderDto>> GetOrdersOfSeller(int sellerId);
 }

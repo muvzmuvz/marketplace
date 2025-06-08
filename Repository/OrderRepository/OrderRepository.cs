@@ -59,14 +59,11 @@ public class OrderRepository : IOrderRepository
         return await orders.ToListAsync();
     }
 
-    public async Task<List<Order>> GetOrdersByDate(DateTime date)
+    public async Task<List<Order>> GetOrdersByDate(DateTime startDate, DateTime endDate)
     {
-        var startDate = date.Date;
-        var endDate = startDate.AddDays(1).AddTicks(-1);
-
         return await _context.Orders
-            .Where(o => o.DateCreated >= startDate && o.DateCreated <= endDate)
-            .ToListAsync();
+        .Where(o => o.DateCreated >= startDate && o.DateCreated <= endDate)
+        .ToListAsync();
     }
 
     public async Task<List<Order>> GetOrdersOfSeller(int sellerId)

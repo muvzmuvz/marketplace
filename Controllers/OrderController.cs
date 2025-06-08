@@ -101,11 +101,11 @@ public class OrderController : ControllerBase
     }
 
     [HttpGet]
-    [Route("Allorders")]
+    [Route("orders/{startDate}/{endDate}")]
     [Authorize(Roles = "Admin")]
-    public async Task<IActionResult> GetAllOrders(DateTime date)
+    public async Task<IActionResult> GetAllOrders(DateTime startDate, DateTime endDate)
     {
-        var orders = await _orderService.GetOrdersByDate(date);
+        var orders = await _orderService.GetOrdersByDate(startDate, endDate);
 
         return Ok(orders);
     }

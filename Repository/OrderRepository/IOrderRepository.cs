@@ -9,7 +9,7 @@ public interface IOrderRepository
     Task CreateOrderAsync(Order order); 
     Task DeleteOrderAsync(int orderId);
     Task UpdateOrderAsync(Order newOrder, int orderId);
-    Task<List<Order>> GetOrdersByDate(DateTime date);
+    Task<List<Order>> GetOrdersByDate(DateTime startDate, DateTime endDate);
     Task UpdateOfStatusAsync(OrderStatus orderStatus, int orderid);
     Task<List<Order>> GetOrdersOfSeller(int sellerId);
 }
